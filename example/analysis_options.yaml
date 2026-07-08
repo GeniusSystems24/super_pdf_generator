@@ -1,0 +1,11 @@
+# Lenient analysis for the demo app. The library package enforces the strict
+# rules (explicit return types, trailing commas, const constructors); the demo
+# keeps the standard Flutter lint set so example code stays readable.
+include: package:flutter_lints/flutter.yaml
+
+linter:
+  rules:
+    prefer_const_constructors: false
+    prefer_const_constructors_in_immutables: false
+    require_trailing_commas: false
+    use_build_context_synchronously: false

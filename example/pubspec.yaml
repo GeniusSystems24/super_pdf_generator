@@ -1,0 +1,29 @@
+name: folio_studio
+description: >-
+  Folio Studio — the reference demonstration app for the super_pdf_generator
+  (Folio) PDF SDK. Mirrors the approved Web design: sidebar + app-bar chrome,
+  document builder, live preview, processing, batch, job manager and settings,
+  in the GeniusLink visual language.
+publish_to: none
+version: 0.1.0
+
+environment:
+  sdk: ">=3.3.0 <4.0.0"
+  flutter: ">=3.19.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  super_pdf_generator:
+    path: ../
+  printing: ^5.12.0
+  pdf: ^3.10.8
+  google_fonts: ^6.2.1
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^3.0.0
+
+flutter:
+  uses-material-design: true

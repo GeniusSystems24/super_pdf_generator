@@ -1,0 +1,29 @@
+name: super_pdf_generator
+description: >-
+  Folio — a framework-independent, typed PDF document SDK for Flutter.
+  Build, generate, preview, process, print and share PDF documents from
+  structured data. Clean Architecture: the domain and application layers are
+  pure Dart; Flutter, the `pdf` engine and `printing` are outer-ring adapters.
+version: 0.1.0
+publish_to: none
+
+environment:
+  sdk: ">=3.3.0 <4.0.0"
+  flutter: ">=3.19.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  meta: ^1.11.0
+  # Infrastructure-only adapters. The domain/application layers never import
+  # these — the architectural boundary test in test/architecture asserts it.
+  pdf: ^3.10.8
+  printing: ^5.12.0
+  path_provider: ^2.1.2
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^3.0.0
+
+flutter: {}
