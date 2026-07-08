@@ -5,9 +5,11 @@
 import 'dart:typed_data';
 
 import '../domain/document.dart';
+import '../domain/document_info.dart';
 import '../domain/failures.dart';
 import '../domain/generation.dart';
 import '../domain/jobs.dart';
+import '../domain/printing.dart';
 import '../domain/processing.dart';
 import 'contracts.dart';
 import 'jobs/job_queue.dart';
@@ -21,12 +23,18 @@ class PdfClient {
     required FileGateway fileGateway,
     required PrintGateway printGateway,
     ShareGateway? shareGateway,
+    InspectDocument? inspect,
+    PrinterDiscovery? printerDiscovery,
+    EmailGateway? emailGateway,
   })  : _generate = generate,
         _process = process,
         _jobs = jobs,
         _files = fileGateway,
         _print = printGateway,
-        _share = shareGateway;
+        _share = shareGateway,
+        _inspect = inspect,
+        _discovery = printerDiscovery,
+        _email = emailGateway;
 
   final GenerateDocument _generate;
   final ProcessDocument _process;
@@ -34,11 +42,16 @@ class PdfClient {
   final FileGateway _files;
   final PrintGateway _print;
   final ShareGateway? _share;
+  final InspectDocument? _inspect;
+  final PrinterDiscovery? _discovery;
+  final EmailGateway? _email;
 
   /// Job-management surface (enqueue / observe / retry / cancel / stats …).
   JobQueue get jobs => _jobs;
 
   bool get canShare => _share?.canShare ?? false;
+  bool get canEmail => _email?.canEmail ?? false;
+  bool get canDiscoverPrinters => _discovery != null;
 
   // ---- generation --------------------------------------------------------
 
@@ -82,14 +95,65 @@ class PdfClient {
     }
   }
 
-  Future<Result<void>> printDocument(PdfGenerationResult result) async {
+  Future<Result<void>> printDocument(
+    PdfGenerationResult result, {
+    PrintSettings? settings,
+    PrinterDevice? printer,
+  }) async {
     try {
-      await _print.printDocument(result);
+      await _print.printDocument(result, settings: settings, printer: printer);
       return const Result.ok(null);
     } catch (e) {
       return Result.err(PrintingFailure(
         code: 'PRINT_FAILED',
         message: 'The document could not be sent to the printer.',
+        cause: e,
+      ));
+    }
+  }
+
+  /// Enumerate available printers, when a discovery adapter is configured.
+  Future<Result<List<PrinterDevice>>> listPrinters() async {
+    final discovery = _discovery;
+    if (discovery == null) {
+      return Result.err(const UnsupportedFeatureFailure(
+        code: 'DISCOVERY_UNSUPPORTED',
+        message: 'Printer discovery is not available on this client.',
+      ));
+    }
+    try {
+      return Result.ok(await discovery.listPrinters());
+    } catch (e) {
+      return Result.err(PrintingFailure(
+        code: 'DISCOVERY_FAILED',
+        message: 'Printers could not be enumerated.',
+        cause: e,
+      ));
+    }
+  }
+
+  /// Open a pre-filled email compose window as a delivery channel.
+  Future<Result<void>> emailCompose({
+    List<String> to = const <String>[],
+    String? subject,
+    String? body,
+    List<String> cc = const <String>[],
+  }) async {
+    final email = _email;
+    if (email == null || !email.canEmail) {
+      return Result.err(const UnsupportedFeatureFailure(
+        code: 'EMAIL_UNSUPPORTED',
+        message: 'Email is not available on this platform.',
+        recovery: 'Use share() and pick an email target from the OS sheet.',
+      ));
+    }
+    try {
+      await email.compose(to: to, subject: subject, body: body, cc: cc);
+      return const Result.ok(null);
+    } catch (e) {
+      return Result.err(SharingFailure(
+        code: 'EMAIL_FAILED',
+        message: 'The email could not be composed.',
         cause: e,
       ));
     }
@@ -120,6 +184,19 @@ class PdfClient {
 
   Future<Result<PdfProcessingResult>> process(PdfProcessingRequest request) =>
       _process(request);
+
+  /// Read metadata / page geometry from an existing PDF.
+  Future<Result<PdfDocumentInfo>> inspect(PdfInputFile input) {
+    final inspect = _inspect;
+    if (inspect == null) {
+      return Future.value(Result.err(const UnsupportedFeatureFailure(
+        code: 'INSPECT_UNSUPPORTED',
+        message: 'No PDF inspector is configured on this client.',
+        recovery: 'Use createStudioClient(), which wires the Syncfusion inspector.',
+      )));
+    }
+    return inspect(input);
+  }
 
   // ---- background & batch ------------------------------------------------
 

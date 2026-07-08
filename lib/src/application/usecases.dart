@@ -3,6 +3,7 @@
 // throws for expected conditions.
 
 import '../domain/document.dart';
+import '../domain/document_info.dart';
 import '../domain/failures.dart';
 import '../domain/generation.dart';
 import '../domain/processing.dart';
@@ -80,6 +81,31 @@ class ProcessDocument {
       return Result.err(ProcessingFailure(
         code: 'PROCESS_FAILED',
         message: 'The ${request.operation} operation failed.',
+        cause: e,
+        context: {'stack': s.toString()},
+      ));
+    }
+  }
+}
+
+/// Read metadata / page geometry from an existing PDF.
+class InspectDocument {
+  const InspectDocument(this._inspector, this._logger);
+  final PdfInspector _inspector;
+  final PdfLogger _logger;
+
+  Future<Result<PdfDocumentInfo>> call(PdfInputFile input) async {
+    try {
+      final info = await _inspector.inspect(input);
+      _logger.log(LogEvent('info', 'inspected ${input.name}',
+          data: {'pages': info.pageCount, 'bytes': info.byteLength}));
+      return Result.ok(info);
+    } on PdfFailure catch (f) {
+      return Result.err(f);
+    } catch (e, s) {
+      return Result.err(ProcessingFailure(
+        code: 'INSPECT_FAILED',
+        message: 'The document could not be inspected.',
         cause: e,
         context: {'stack': s.toString()},
       ));

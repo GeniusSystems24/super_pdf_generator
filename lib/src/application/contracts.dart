@@ -5,7 +5,9 @@
 import 'dart:typed_data';
 
 import '../domain/document.dart';
+import '../domain/document_info.dart';
 import '../domain/generation.dart';
+import '../domain/printing.dart';
 import '../domain/processing.dart';
 
 /// Optional context passed to a renderer (fonts already resolved, etc.).
@@ -52,6 +54,12 @@ abstract interface class PdfRenderer {
   Future<PdfProcessingResult> process(PdfProcessingRequest request);
 }
 
+/// Reads metadata and page geometry from an existing PDF without rendering it.
+/// Implemented in infrastructure by the Syncfusion adapter.
+abstract interface class PdfInspector {
+  Future<PdfDocumentInfo> inspect(PdfInputFile input);
+}
+
 /// Download / persist produced bytes.
 abstract interface class FileGateway {
   Future<void> download(PdfGenerationResult result);
@@ -60,7 +68,29 @@ abstract interface class FileGateway {
 
 /// Send bytes to a printer (or the platform print dialog).
 abstract interface class PrintGateway {
-  Future<void> printDocument(PdfGenerationResult result);
+  Future<void> printDocument(
+    PdfGenerationResult result, {
+    PrintSettings? settings,
+    PrinterDevice? printer,
+  });
+}
+
+/// Enumerate available printers (network / system / connected).
+abstract interface class PrinterDiscovery {
+  Future<List<PrinterDevice>> listPrinters();
+}
+
+/// Compose an email, optionally pre-addressed, as one delivery channel.
+/// (Attaching the PDF itself is delegated to [ShareGateway.share]/the OS sheet,
+/// which exposes email, Bluetooth and installed apps as targets.)
+abstract interface class EmailGateway {
+  bool get canEmail;
+  Future<void> compose({
+    List<String> to = const <String>[],
+    String? subject,
+    String? body,
+    List<String> cc = const <String>[],
+  });
 }
 
 /// Share bytes via the platform share sheet, where supported.

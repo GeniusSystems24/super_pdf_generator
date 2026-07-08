@@ -76,11 +76,13 @@ class PdfPageSize {
   final double widthPt;
   final double heightPt;
 
+  static const PdfPageSize a3 = PdfPageSize('A3', 841.89, 1190.55);
   static const PdfPageSize a4 = PdfPageSize('A4', 595.28, 841.89);
+  static const PdfPageSize a5 = PdfPageSize('A5', 419.53, 595.28);
   static const PdfPageSize letter = PdfPageSize('Letter', 612, 792);
   static const PdfPageSize legal = PdfPageSize('Legal', 612, 1008);
 
-  static const List<PdfPageSize> presets = <PdfPageSize>[a4, letter, legal];
+  static const List<PdfPageSize> presets = <PdfPageSize>[a3, a4, a5, letter, legal];
 
   static PdfPageSize byName(String name) => presets.firstWhere(
         (p) => p.name.toLowerCase() == name.toLowerCase(),

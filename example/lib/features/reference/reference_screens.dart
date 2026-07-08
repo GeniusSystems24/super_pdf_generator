@@ -405,49 +405,138 @@ class PerformanceScreen extends StatelessWidget {
 // TEMPLATES  (optional pack)
 // ============================================================================
 
-class TemplatesScreen extends StatelessWidget {
+/// A demo entry pairing a built-in business template with sample data and a
+/// short subtitle. The template does the real work (recompute + validate).
+class _TemplateDemo {
+  const _TemplateDemo(this.template, this.subtitle, this.buildDoc, this.runValidate);
+  final PdfTemplate<Object?> template;
+  final String subtitle;
+  final PdfDocumentDefinition Function(PdfTemplateContext ctx) buildDoc;
+  final GeniusFinancialValidationResult Function(PdfTemplateContext ctx) runValidate;
+}
+
+class TemplatesScreen extends StatefulWidget {
   const TemplatesScreen({super.key, required this.builder, required this.onOpen});
   final BuilderController builder;
   final VoidCallback onOpen;
 
-  void _use(List<PdfComponent> blocks, String title) {
-    builder.clear();
-    builder.setMetadata(title: title);
-    for (final b in blocks) {
-      builder.add(b);
+  @override
+  State<TemplatesScreen> createState() => _TemplatesScreenState();
+}
+
+class _TemplatesScreenState extends State<TemplatesScreen> {
+  bool _arabic = false;
+
+  PdfTemplateContext get _ctx => _arabic
+      ? PdfTemplateContext.arabic(roundingPolicy: GeniusRoundingPolicy.forCurrency('SAR'))
+      : PdfTemplateContext(roundingPolicy: GeniusRoundingPolicy.forCurrency('SAR'));
+
+  void _useDoc(PdfDocumentDefinition doc) {
+    widget.builder.clear();
+    widget.builder.setMetadata(title: doc.metadata.title, author: doc.metadata.author);
+    widget.builder.setDirection(doc.direction);
+    for (final c in doc.pages.expand((p) => p.content)) {
+      widget.builder.add(c);
     }
-    onOpen();
+    widget.onOpen();
+  }
+
+  // ── sample data ──
+
+  static final _seller = PdfParty(name: 'GeniusLink Co.', nameAr: 'شركة جينيس لينك', taxNumber: '300000000000003', address: 'Riyadh, KSA');
+  static final _buyer = PdfParty(name: 'Northwind Trading LLC', nameAr: 'شركة الرياح الشمالية', taxNumber: '311111111111113', address: 'Jeddah, KSA');
+
+  List<_TemplateDemo> _demos() {
+    final invoice = TaxInvoiceData(
+      invoiceNumber: 'INV-2042',
+      issueDate: DateTime(2026, 2, 14),
+      seller: _seller,
+      buyer: _buyer,
+      currency: 'SAR',
+      lines: const [
+        PdfInvoiceLine(description: 'Design system license', descriptionAr: 'رخصة نظام التصميم', quantity: 1, unitPrice: 1200),
+        PdfInvoiceLine(description: 'Integration support (12h)', descriptionAr: 'دعم التكامل (12 ساعة)', quantity: 12, unitPrice: 150),
+        PdfInvoiceLine(description: 'Onboarding workshop', descriptionAr: 'ورشة تهيئة', quantity: 1, unitPrice: 900),
+      ],
+    );
+    final payslip = PayslipData(
+      employer: _seller,
+      employee: PdfParty(name: 'Sara Al-Otaibi', nameAr: 'سارة العتيبي'),
+      periodLabel: 'February 2026',
+      employeeId: 'EMP-1183',
+      payDate: DateTime(2026, 2, 27),
+      currency: 'SAR',
+      earnings: const [
+        PayComponent(label: 'Basic Salary', labelAr: 'الراتب الأساسي', amount: 12000),
+        PayComponent(label: 'Housing Allowance', labelAr: 'بدل السكن', amount: 3000),
+        PayComponent(label: 'Transport', labelAr: 'بدل النقل', amount: 800),
+      ],
+      deductions: const [
+        PayComponent(label: 'GOSI', labelAr: 'التأمينات', amount: 1237.50),
+        PayComponent(label: 'Loan Repayment', labelAr: 'سداد قرض', amount: 500),
+      ],
+    );
+    final trial = TrialBalanceData(
+      organizationName: 'GeniusLink Co.',
+      organizationNameAr: 'شركة جينيس لينك',
+      asOfDate: DateTime(2026, 1, 31),
+      currency: 'SAR',
+      rows: const [
+        TrialBalanceRow(accountCode: '1010', accountName: 'Cash', accountNameAr: 'النقدية', debit: 85000),
+        TrialBalanceRow(accountCode: '1200', accountName: 'Accounts Receivable', accountNameAr: 'المدينون', debit: 42000),
+        TrialBalanceRow(accountCode: '2010', accountName: 'Accounts Payable', accountNameAr: 'الدائنون', credit: 31000),
+        TrialBalanceRow(accountCode: '3000', accountName: 'Capital', accountNameAr: 'رأس المال', credit: 96000),
+      ],
+    );
+    final statement = AccountStatementData(
+      holder: _buyer,
+      accountNumber: 'SA44-2000-0001-2345',
+      periodLabel: 'Jan 2026',
+      openingBalance: 5000,
+      currency: 'SAR',
+      entries: [
+        StatementEntry(date: DateTime(2026, 1, 3), description: 'Invoice INV-2042', descriptionAr: 'فاتورة INV-2042', debit: 4485),
+        StatementEntry(date: DateTime(2026, 1, 12), description: 'Payment received', descriptionAr: 'دفعة واردة', credit: 4485),
+        StatementEntry(date: DateTime(2026, 1, 20), description: 'Service fee', descriptionAr: 'رسوم خدمة', debit: 150),
+      ],
+    );
+    final voucher = PaymentVoucherData(
+      voucherNumber: 'PV-0091',
+      date: DateTime(2026, 2, 15),
+      payer: _seller,
+      payee: PdfParty(name: 'Gulf Facilities Est.', nameAr: 'مؤسسة الخليج للمرافق'),
+      amount: 4485,
+      fee: 15,
+      purpose: 'Monthly maintenance contract',
+      purposeAr: 'عقد الصيانة الشهري',
+      method: 'Bank Transfer',
+      currency: 'SAR',
+    );
+
+    const taxT = TaxInvoiceTemplate();
+    const payT = PayslipTemplate();
+    const tbT = TrialBalanceTemplate();
+    const stmtT = AccountStatementTemplate();
+    const pvT = PaymentVoucherTemplate();
+
+    return [
+      _TemplateDemo(taxT, 'VAT · line items · QR · amount in words',
+          (c) => taxT.build(invoice, context: c), (c) => taxT.validate(invoice, context: c)),
+      _TemplateDemo(payT, 'earnings · deductions · net pay',
+          (c) => payT.build(payslip, context: c), (c) => payT.validate(payslip, context: c)),
+      _TemplateDemo(tbT, 'debit = credit enforcement',
+          (c) => tbT.build(trial, context: c), (c) => tbT.validate(trial, context: c)),
+      _TemplateDemo(stmtT, 'transactions · running balance',
+          (c) => stmtT.build(statement, context: c), (c) => stmtT.validate(statement, context: c)),
+      _TemplateDemo(pvT, 'amount in words · signatures',
+          (c) => pvT.build(voucher, context: c), (c) => pvT.validate(voucher, context: c)),
+    ];
   }
 
   @override
   Widget build(BuildContext context) {
     final gl = context.gl;
-    final templates = <(String, String, List<PdfComponent>)>[
-      ('Invoice', 'bilingual · VAT · totals', [
-        pdf.heading('Invoice'),
-        pdf.keyValue(const [MapEntry('Invoice No', 'INV-2042'), MapEntry('Date', '2026-02-14')]),
-        pdf.table(columns: const ['Description', 'Amount'], rows: const [['License', '1,200'], ['Support', '1,800']]),
-        pdf.statusBadge(label: 'AWAITING PAYMENT', tone: 'orange'),
-      ]),
-      ('Financial report', 'sections · charts · KPIs', [
-        pdf.heading('Quarterly Report'),
-        pdf.paragraph('Summary of Q4 2026 performance.'),
-        pdf.keyValue(const [MapEntry('Revenue', '4.2M'), MapEntry('Growth', '+12%')]),
-      ]),
-      ('Certificate', 'seal · signature block', [
-        pdf.heading('Certificate of Completion'),
-        pdf.paragraph('This certifies the successful completion of the program.'),
-        pdf.signatureBlock(name: 'A. Director', role: 'Program Lead'),
-      ]),
-      ('Receipt', 'compact · thermal-ready', [
-        pdf.heading('Receipt', level: 2),
-        pdf.keyValue(const [MapEntry('Item', 'Subscription'), MapEntry('Total', 'SAR 99.00')]),
-      ]),
-      ('Statement', 'transactions · running balance', [
-        pdf.heading('Account Statement'),
-        pdf.table(columns: const ['Date', 'Description', 'Amount'], rows: const [['11-01', 'Charge', '120'], ['11-08', 'Payment', '-90']]),
-      ]),
-    ];
+    final demos = _demos();
 
     return ListView(
       padding: const EdgeInsets.all(20),
@@ -458,48 +547,85 @@ class TemplatesScreen extends StatelessWidget {
           child: Row(children: [
             GlSectionMarker(gl.orange, height: 32),
             const SizedBox(width: 12),
-            Expanded(child: Text('Deliberately last in the nav. @folio/pdf-templates is an optional pack — each template is a function returning a PdfDocumentDefinition built from the same pdf.* components. The core has zero knowledge of it.', style: GlType.body(context, size: 12.5, color: gl.fg2).copyWith(height: 1.5))),
+            Expanded(child: Text('Declarative business templates. Each one recomputes its totals with GeniusMoney and validates the figures with GeniusFinancialValidator before building a PdfDocumentDefinition from the same pdf.* components — so a document only renders when its arithmetic is provably correct.', style: GlType.body(context, size: 12.5, color: gl.fg2).copyWith(height: 1.5))),
           ]),
         ),
-        const SizedBox(height: 18),
+        const SizedBox(height: 14),
+        Row(
+          children: [
+            Text('OUTPUT LANGUAGE', style: GlType.label(context).copyWith(fontSize: 10)),
+            const SizedBox(width: 12),
+            GlSegmented<bool>(
+              value: _arabic,
+              segments: const {false: 'EN', true: 'ع (RTL)'},
+              onChanged: (v) => setState(() => _arabic = v),
+            ),
+          ],
+        ),
+        const SizedBox(height: 16),
         LayoutBuilder(builder: (context, c) {
           final cols = c.maxWidth > 900 ? 3 : 2;
           return Wrap(
             spacing: 12,
             runSpacing: 12,
             children: [
-              for (final t in templates)
+              for (final d in demos)
                 SizedBox(
                   width: (c.maxWidth - (cols - 1) * 12) / cols,
-                  child: GlCard(
-                    padding: EdgeInsets.zero,
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
-                        Container(
-                          height: 96,
-                          decoration: const BoxDecoration(color: Colors.white, borderRadius: BorderRadius.vertical(top: GlRadius.lg)),
-                          padding: const EdgeInsets.all(14),
-                          child: Text(t.$1, style: const TextStyle(color: Color(0xFF111111), fontWeight: FontWeight.w800, fontSize: 15)),
-                        ),
-                        Padding(
-                          padding: const EdgeInsets.all(14),
-                          child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                            Text('templates.${t.$1.toLowerCase().split(' ').first}', style: GlType.mono(context, size: 11.5, color: gl.fg1)),
-                            const SizedBox(height: 3),
-                            Text(t.$2, style: GlType.body(context, size: 10.5, color: gl.fg3)),
-                            const SizedBox(height: 10),
-                            GlGhostButton(label: 'Use in builder', icon: Icons.open_in_new_rounded, onPressed: () => _use(t.$3, t.$1)),
-                          ]),
-                        ),
-                      ],
-                    ),
+                  child: _TemplateCard(
+                    title: _arabic ? d.template.nameAr : d.template.name,
+                    id: d.template.id,
+                    subtitle: d.subtitle,
+                    valid: d.runValidate(_ctx).isValid,
+                    onUse: () => _useDoc(d.buildDoc(_ctx)),
                   ),
                 ),
             ],
           );
         }),
       ],
+    );
+  }
+}
+
+class _TemplateCard extends StatelessWidget {
+  const _TemplateCard({required this.title, required this.id, required this.subtitle, required this.valid, required this.onUse});
+  final String title;
+  final String id;
+  final String subtitle;
+  final bool valid;
+  final VoidCallback onUse;
+
+  @override
+  Widget build(BuildContext context) {
+    final gl = context.gl;
+    return GlCard(
+      padding: EdgeInsets.zero,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Container(
+            height: 96,
+            decoration: const BoxDecoration(color: Colors.white, borderRadius: BorderRadius.vertical(top: GlRadius.lg)),
+            padding: const EdgeInsets.all(14),
+            alignment: Alignment.topLeft,
+            child: Text(title, style: const TextStyle(color: Color(0xFF111111), fontWeight: FontWeight.w800, fontSize: 15)),
+          ),
+          Padding(
+            padding: const EdgeInsets.all(14),
+            child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+              Row(children: [
+                Expanded(child: Text('templates.$id', style: GlType.mono(context, size: 11.5, color: gl.fg1))),
+                GlStatusPill(valid ? 'VALID' : 'CHECK', color: valid ? gl.green : gl.danger),
+              ]),
+              const SizedBox(height: 3),
+              Text(subtitle, style: GlType.body(context, size: 10.5, color: gl.fg3)),
+              const SizedBox(height: 10),
+              GlGhostButton(label: 'Use in builder', icon: Icons.open_in_new_rounded, onPressed: onUse),
+            ]),
+          ),
+        ],
+      ),
     );
   }
 }

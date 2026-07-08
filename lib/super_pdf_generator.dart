@@ -20,9 +20,14 @@ export 'src/domain/value_objects.dart';
 export 'src/domain/theme.dart';
 export 'src/domain/components.dart';
 export 'src/domain/document.dart';
+export 'src/domain/document_info.dart';
 export 'src/domain/generation.dart';
 export 'src/domain/processing.dart';
+export 'src/domain/printing.dart';
 export 'src/domain/jobs.dart';
+
+// ---- Domain: financial (audit-grade money, rounding, validation) ----------
+export 'src/domain/financial/financial.dart';
 
 // ---- Domain: result & typed failures --------------------------------------
 export 'src/domain/failures.dart';
@@ -32,6 +37,9 @@ export 'src/application/contracts.dart';
 
 // ---- Application: fluent builder + component factory ----------------------
 export 'src/application/builder.dart';
+
+// ---- Application: declarative business templates --------------------------
+export 'src/application/templates/templates.dart';
 
 // ---- Application: use cases ------------------------------------------------
 export 'src/application/usecases.dart';

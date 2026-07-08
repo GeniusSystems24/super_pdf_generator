@@ -29,11 +29,23 @@ lib/
 ├── pdf_generator.dart                # convenience alias (re-exports the barrel)
 └── src/
     ├── domain/                        # immutable models, value objects, typed
-    │                                  #   failures + Result, theme, components
+    │   │                              #   failures + Result, theme, components,
+    │   │                              #   processing, printing, document_info
+    │   └── financial/                  # audit-grade money + rounding + validation
+    │       ├── genius_money.dart        #   integer-minor-unit Money value object
+    │       ├── genius_rounding_policy.dart # rounding modes + tolerance
+    │       └── genius_financial_validator.dart # subtotal/VAT/total/balance rules
     ├── application/
-    │   ├── contracts.dart             # ports: PdfRenderer, gateways, logger, fonts
+    │   ├── contracts.dart             # ports: PdfRenderer, PdfInspector, gateways,
+    │   │                              #   PrinterDiscovery, EmailGateway, logger, fonts
     │   ├── builder.dart               # pdfDocument() fluent builder + `pdf.*` factory
-    │   ├── usecases.dart              # GenerateDocument, ProcessDocument
+    │   ├── templates/                  # declarative business templates (pure Dart)
+    │   │   ├── engine/template.dart     #   PdfTemplate + PdfTemplateContext
+    │   │   ├── template_registry.dart   #   id → template registry
+    │   │   ├── support/                 #   money formatting + amount-in-words (EN/AR)
+    │   │   └── business/                #   tax invoice · payslip · trial balance ·
+    │   │                                #     account statement · payment voucher
+    │   ├── usecases.dart              # GenerateDocument, ProcessDocument, InspectDocument
     │   ├── pdf_client.dart            # the high-level PdfClient facade
     │   └── jobs/                       # queue collaborators (NOT one god class):
     │       ├── queue_policy.dart       #   ordering strategy
@@ -46,9 +58,11 @@ lib/
     ├── infrastructure/
     │   ├── rendering/
     │   │   ├── pw_mapper.dart          # pure pdf-package mapper (isolate-safe)
-    │   │   ├── widget_pdf_renderer.dart# PdfRenderer impl (render + process)
+    │   │   ├── widget_pdf_renderer.dart# PdfRenderer impl (render + raster fallback)
+    │   │   ├── syncfusion_pdf_processor.dart # LOSSLESS merge/split/rotate/watermark + inspect
+    │   │   ├── processing_renderer.dart # decorator: base render + Syncfusion process
     │   │   └── isolate_render_runner.dart # off-main-isolate generation + fallback
-    │   ├── platform/platform_gateways.dart # print / share / file via `printing`
+    │   ├── platform/platform_gateways.dart # print (+ discovery/settings) / share / email / file
     │   └── support.dart               # loggers + in-memory font registry
     ├── presentation/
     │   └── builder_controller.dart    # presentation model (ChangeNotifier)
@@ -74,6 +88,59 @@ example/lib/
 - Infrastructure is the **only** layer that imports the `pdf` engine.
 - Controllers never construct infrastructure — everything is injected at the
   composition root.
+
+---
+
+## Business templates & audit-grade financial validation
+
+Folio ships a **financial domain** (`domain/financial/`) and a **declarative
+template engine** (`application/templates/`) adopted from the GeniusLink PDF
+reference and re-expressed against Folio's clean layering — both are **pure
+Dart** and stay inside the boundary rules above.
+
+- **`GeniusMoney`** stores value as an integer count of minor units, so
+  arithmetic is exact; **`GeniusRoundingPolicy`** controls decimal places,
+  rounding mode and tolerance (3-decimal currencies like KWD/BHD supported).
+- **`GeniusFinancialValidator`** proves subtotals, VAT, grand totals,
+  transfer nets, currency conversions, debit=credit balance, column
+  sums/averages and budget variance — every failure carries a bilingual
+  (EN/AR) message.
+- **Templates** recompute their totals and validate the caller-provided
+  figures *before* building; `buildChecked()` returns the document only when
+  the arithmetic is provably correct. Amount-in-words (EN/AR) is built in.
+
+```dart
+const template = TaxInvoiceTemplate();
+final ctx = PdfTemplateContext(roundingPolicy: GeniusRoundingPolicy.forCurrency('SAR'));
+final result = template.buildChecked(invoiceData, context: ctx);
+if (result.isValid) {
+  await client.generate(PdfGenerationRequest(fileName: 'inv.pdf', document: result.document!));
+} else {
+  for (final e in result.validation.errors) print(e.message); // e.messageAr for Arabic
+}
+```
+
+Built-ins (also in `defaultTemplateRegistry()`): **tax invoice** (VAT + QR),
+**payslip**, **trial balance** (debit=credit), **account statement** (running
+balance) and **payment/receipt voucher**. Each honours `PdfTemplateContext`'s
+language, so Arabic output is RTL with Arabic labels and amount-in-words.
+
+## Lossless PDF processing & introspection
+
+`createStudioClient()` layers a **Syncfusion-backed** processor over the
+generation pipeline. Unlike the rasterize-and-recompose fallback, merge /
+split / extract / rotate / watermark are now **lossless** — text stays
+selectable, vectors stay sharp and files stay small. `client.inspect(input)`
+returns a `PdfDocumentInfo` (page count, metadata, per-page geometry and
+rotation) without rendering.
+
+## Printing, discovery & delivery
+
+`PrintGateway.printDocument` now takes optional `PrintSettings` (copies,
+colour, duplex, paper size, page ranges) and a target `PrinterDevice`;
+`client.listPrinters()` enumerates devices via `PrinterDiscovery`, and
+`client.emailCompose(...)` opens a pre-filled email. The OS share sheet
+(`client.share`) continues to expose Bluetooth and installed apps as targets.
 
 ---
 

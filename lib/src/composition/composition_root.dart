@@ -20,6 +20,8 @@ import '../application/pdf_client.dart';
 import '../application/usecases.dart';
 import '../infrastructure/platform/platform_gateways.dart';
 import '../infrastructure/rendering/isolate_render_runner.dart';
+import '../infrastructure/rendering/processing_renderer.dart';
+import '../infrastructure/rendering/syncfusion_pdf_processor.dart';
 import '../infrastructure/rendering/widget_pdf_renderer.dart';
 import '../infrastructure/support.dart';
 
@@ -38,6 +40,9 @@ PdfClient createPdfClient({
   QueueStatisticsCalculator statistics = const DefaultQueueStatistics(),
   JobRepository? jobRepository,
   int concurrency = 4,
+  PdfInspector? inspector,
+  PrinterDiscovery? printerDiscovery,
+  EmailGateway? emailGateway,
 }) {
   final generate = GenerateDocument(renderer, logger);
   final process = ProcessDocument(renderer, logger);
@@ -60,6 +65,9 @@ PdfClient createPdfClient({
     fileGateway: fileGateway ?? const SharePdfFileGateway(),
     printGateway: printGateway ?? const PrintingPrintGateway(),
     shareGateway: shareGateway ?? const PrintingShareGateway(),
+    inspect: inspector == null ? null : InspectDocument(inspector, logger),
+    printerDiscovery: printerDiscovery,
+    emailGateway: emailGateway,
   );
 }
 
@@ -80,6 +88,17 @@ PdfClient createStudioClient({
     boldFontBytes: boldFontBytes,
     arabicFontBytes: arabicFontBytes,
   );
-  final renderer = useIsolate ? IsolateRenderRunner(fallback: main) : main;
-  return createPdfClient(renderer: renderer, logger: logger, concurrency: concurrency);
+  final base = useIsolate ? IsolateRenderRunner(fallback: main) : main;
+  // Lossless page-level processing + introspection via Syncfusion, layered on
+  // top of the `pdf`/`printing` generation pipeline.
+  const processor = SyncfusionPdfProcessor();
+  final renderer = ProcessingRenderer(base: base, processor: processor);
+  return createPdfClient(
+    renderer: renderer,
+    logger: logger,
+    concurrency: concurrency,
+    inspector: processor,
+    printerDiscovery: const PrintingPrinterDiscovery(),
+    emailGateway: const UrlLauncherEmailGateway(),
+  );
 }
