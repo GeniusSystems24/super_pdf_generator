@@ -86,7 +86,7 @@ class GlStatusPill extends StatelessWidget {
   @override
   Widget build(BuildContext context) => Container(
         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-        decoration: BoxDecoration(color: color.withOpacity(0.16), borderRadius: const BorderRadius.all(GlRadius.xl)),
+        decoration: BoxDecoration(color: color.withValues(alpha:0.16), borderRadius: const BorderRadius.all(GlRadius.xl)),
         child: Text(label.toUpperCase(),
             style: TextStyle(fontSize: 9.5, fontWeight: FontWeight.w700, letterSpacing: 0.5, color: color)),
       );

@@ -71,7 +71,7 @@ class BuilderController extends ChangeNotifier {
         palette: PdfPalette(accent: accent),
         direction: direction,
         variant: direction == PdfDirection.rtl ? 'rtl' : 'light',
-      ))
+      ),)
       .direction(direction)
       .page(size: size, orientation: orientation, margins: margins)
       .content(_blocks.map((b) => b.component).toList())
@@ -176,14 +176,14 @@ class BuilderController extends ChangeNotifier {
         BuilderBlock(
             _nextId(),
             pdf.paragraph(
-                'Prepared for Northwind Trading LLC. Payment is due within 30 days of the issue date shown below.')),
+                'Prepared for Northwind Trading LLC. Payment is due within 30 days of the issue date shown below.',),),
         BuilderBlock(
             _nextId(),
             pdf.keyValue(const [
               MapEntry('Invoice No', 'INV-2042'),
               MapEntry('Date', '2026-02-14'),
               MapEntry('Terms', 'Net 30'),
-            ])),
+            ]),),
         BuilderBlock(_nextId(), pdf.divider()),
         BuilderBlock(
             _nextId(),
@@ -191,12 +191,12 @@ class BuilderController extends ChangeNotifier {
               'Description',
               'Qty',
               'Unit',
-              'Amount'
+              'Amount',
             ], rows: const [
               ['Design system license', '1', '1,200', '1,200'],
               ['Integration support', '12', '150', '1,800'],
               ['Onboarding workshop', '1', '900', '900'],
-            ])),
+            ],),),
         BuilderBlock(_nextId(), pdf.spacer(10)),
         BuilderBlock(
             _nextId(),
@@ -204,9 +204,9 @@ class BuilderController extends ChangeNotifier {
               MapEntry('Subtotal', '3,900.00'),
               MapEntry('VAT 15%', '585.00'),
               MapEntry('Total', 'SAR 4,485.00'),
-            ])),
+            ]),),
         BuilderBlock(
-            _nextId(), pdf.statusBadge(label: 'AWAITING PAYMENT', tone: 'orange')),
+            _nextId(), pdf.statusBadge(label: 'AWAITING PAYMENT', tone: 'orange'),),
       ]);
     _selectedId = _blocks.first.id;
     notifyListeners();

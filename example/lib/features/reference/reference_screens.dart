@@ -118,7 +118,7 @@ class RtlScreen extends StatelessWidget {
                   const Spacer(),
                   Container(
                     padding: const EdgeInsets.all(11),
-                    decoration: BoxDecoration(color: gl.orange.withOpacity(0.08), borderRadius: const BorderRadius.all(GlRadius.md), border: Border.all(color: gl.orange.withOpacity(0.24))),
+                    decoration: BoxDecoration(color: gl.orange.withValues(alpha:0.08), borderRadius: const BorderRadius.all(GlRadius.md), border: Border.all(color: gl.orange.withValues(alpha:0.24))),
                     child: Text('Numbers, dates & currency reformat per locale via Intl-backed formatters. The whole document mirrors when direction is RTL.',
                         style: GlType.body(context, size: 10.5, color: gl.fg2).copyWith(height: 1.5)),
                   ),
@@ -221,7 +221,7 @@ class ErrorHandlingScreen extends StatelessWidget {
                   margin: const EdgeInsets.only(bottom: 2),
                   padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
                   decoration: BoxDecoration(
-                    color: i == 1 ? gl.danger.withOpacity(0.09) : Colors.transparent,
+                    color: i == 1 ? gl.danger.withValues(alpha:0.09) : Colors.transparent,
                     borderRadius: const BorderRadius.all(GlRadius.md),
                     border: Border(left: BorderSide(color: i == 1 ? gl.danger : Colors.transparent, width: 2)),
                   ),
@@ -405,11 +405,13 @@ class PerformanceScreen extends StatelessWidget {
 // TEMPLATES  (optional pack)
 // ============================================================================
 
-/// A demo entry pairing a built-in business template with sample data and a
-/// short subtitle. The template does the real work (recompute + validate).
+/// A demo entry pairing a built-in business template with sample data, a
+/// category and a short subtitle. The template does the real work (recompute
+/// + validate).
 class _TemplateDemo {
-  const _TemplateDemo(this.template, this.subtitle, this.buildDoc, this.runValidate);
+  const _TemplateDemo(this.template, this.category, this.subtitle, this.buildDoc, this.runValidate);
   final PdfTemplate<Object?> template;
+  final String category;
   final String subtitle;
   final PdfDocumentDefinition Function(PdfTemplateContext ctx) buildDoc;
   final GeniusFinancialValidationResult Function(PdfTemplateContext ctx) runValidate;
@@ -426,6 +428,9 @@ class TemplatesScreen extends StatefulWidget {
 
 class _TemplatesScreenState extends State<TemplatesScreen> {
   bool _arabic = false;
+  String _category = 'All';
+
+  static const _categories = ['All', 'Financial', 'Sales', 'HR', 'Vouchers'];
 
   PdfTemplateContext get _ctx => _arabic
       ? PdfTemplateContext.arabic(roundingPolicy: GeniusRoundingPolicy.forCurrency('SAR'))
@@ -459,6 +464,184 @@ class _TemplatesScreenState extends State<TemplatesScreen> {
         PdfInvoiceLine(description: 'Onboarding workshop', descriptionAr: 'ورشة تهيئة', quantity: 1, unitPrice: 900),
       ],
     );
+    final trial = TrialBalanceData(
+      organizationName: 'GeniusLink Co.',
+      organizationNameAr: 'شركة جينيس لينك',
+      asOfDate: DateTime(2026, 1, 31),
+      currency: 'SAR',
+      rows: const [
+        TrialBalanceRow(accountCode: '1010', accountName: 'Cash', accountNameAr: 'النقدية', debit: 85000),
+        TrialBalanceRow(accountCode: '1200', accountName: 'Accounts Receivable', accountNameAr: 'المدينون', debit: 42000),
+        TrialBalanceRow(accountCode: '2010', accountName: 'Accounts Payable', accountNameAr: 'الدائنون', credit: 31000),
+        TrialBalanceRow(accountCode: '3000', accountName: 'Capital', accountNameAr: 'رأس المال', credit: 96000),
+      ],
+    );
+    final balanceSheet = BalanceSheetData(
+      organizationName: 'GeniusLink Co.',
+      organizationNameAr: 'شركة جينيس لينك',
+      reportDate: DateTime(2026, 1, 31),
+      currency: 'SAR',
+      assets: const PdfReportSection(title: 'Assets', titleAr: 'الأصول', lines: [
+        PdfReportLine(code: '1010', label: 'Cash', labelAr: 'النقدية', amount: 85000),
+        PdfReportLine(code: '1200', label: 'Accounts Receivable', labelAr: 'المدينون', amount: 42000),
+        PdfReportLine(code: '1500', label: 'Equipment', labelAr: 'المعدات', amount: 60000),
+      ]),
+      liabilities: const PdfReportSection(title: 'Liabilities', titleAr: 'الالتزامات', lines: [
+        PdfReportLine(code: '2010', label: 'Accounts Payable', labelAr: 'الدائنون', amount: 31000),
+        PdfReportLine(code: '2500', label: 'Long-term Loan', labelAr: 'قرض طويل الأجل', amount: 60000),
+      ]),
+      equity: const PdfReportSection(title: 'Equity', titleAr: 'حقوق الملكية', lines: [
+        PdfReportLine(code: '3000', label: 'Capital', labelAr: 'رأس المال', amount: 80000),
+        PdfReportLine(code: '3900', label: 'Retained Earnings', labelAr: 'الأرباح المحتجزة', amount: 16000),
+      ]),
+    );
+    final incomeStatement = IncomeStatementData(
+      organizationName: 'GeniusLink Co.',
+      organizationNameAr: 'شركة جينيس لينك',
+      periodStart: DateTime(2026, 1, 1),
+      periodEnd: DateTime(2026, 1, 31),
+      currency: 'SAR',
+      revenue: const PdfReportSection(title: 'Revenue', titleAr: 'الإيرادات', lines: [
+        PdfReportLine(label: 'Product Sales', labelAr: 'مبيعات المنتجات', amount: 120000),
+        PdfReportLine(label: 'Service Revenue', labelAr: 'إيرادات الخدمات', amount: 45000),
+      ]),
+      costOfSales: const PdfReportSection(title: 'Cost of Sales', titleAr: 'تكلفة المبيعات', lines: [
+        PdfReportLine(label: 'Materials', labelAr: 'المواد', amount: 52000),
+        PdfReportLine(label: 'Direct Labor', labelAr: 'العمالة المباشرة', amount: 28000),
+      ]),
+      operatingExpenses: const PdfReportSection(title: 'Operating Expenses', titleAr: 'المصروفات التشغيلية', lines: [
+        PdfReportLine(label: 'Salaries', labelAr: 'الرواتب', amount: 32000),
+        PdfReportLine(label: 'Rent', labelAr: 'الإيجار', amount: 9000),
+        PdfReportLine(label: 'Marketing', labelAr: 'التسويق', amount: 7000),
+      ]),
+      taxExpense: 6500,
+      providedNetIncome: 30500,
+    );
+    final cashFlow = CashFlowData(
+      organizationName: 'GeniusLink Co.',
+      organizationNameAr: 'شركة جينيس لينك',
+      periodStart: DateTime(2026, 1, 1),
+      periodEnd: DateTime(2026, 1, 31),
+      currency: 'SAR',
+      openingCash: 40000,
+      operating: const PdfReportSection(title: 'Operating Activities', titleAr: 'الأنشطة التشغيلية', lines: [
+        PdfReportLine(label: 'Net Income', labelAr: 'صافي الدخل', amount: 30500),
+        PdfReportLine(label: 'Depreciation', labelAr: 'الإهلاك', amount: 4000),
+      ]),
+      investing: const PdfReportSection(title: 'Investing Activities', titleAr: 'الأنشطة الاستثمارية', lines: [
+        PdfReportLine(label: 'Equipment Purchase', labelAr: 'شراء معدات', amount: -15000),
+      ]),
+      financing: const PdfReportSection(title: 'Financing Activities', titleAr: 'الأنشطة التمويلية', lines: [
+        PdfReportLine(label: 'Loan Repayment', labelAr: 'سداد قرض', amount: -8000),
+      ]),
+      providedClosingCash: 51500,
+    );
+    final budget = BudgetReportData(
+      organizationName: 'GeniusLink Co.',
+      organizationNameAr: 'شركة جينيس لينك',
+      periodLabel: 'Q1 2026',
+      currency: 'SAR',
+      lines: const [
+        BudgetLine(label: 'Marketing', labelAr: 'التسويق', budget: 20000, actual: 23500),
+        BudgetLine(label: 'Salaries', labelAr: 'الرواتب', budget: 90000, actual: 88500),
+        BudgetLine(label: 'Travel', labelAr: 'السفر', budget: 8000, actual: 6200),
+      ],
+    );
+    final customerStatement = CustomerStatementData(
+      customer: _buyer,
+      accountNumber: 'CUST-3301',
+      periodLabel: 'Jan 2026',
+      currency: 'SAR',
+      openingBalance: 4485,
+      transactions: [
+        CustomerTransaction(date: DateTime(2026, 1, 10), description: 'Invoice INV-2100', descriptionAr: 'فاتورة INV-2100', debit: 3200),
+        CustomerTransaction(date: DateTime(2026, 1, 18), description: 'Payment received', descriptionAr: 'دفعة واردة', credit: 4485),
+      ],
+      aging: const [
+        AgingBucket(label: '0-30 days', labelAr: '٠-٣٠ يوم', amount: 3200),
+        AgingBucket(label: '31-60 days', labelAr: '٣١-٦٠ يوم', amount: 0),
+      ],
+      providedClosingBalance: 3200,
+    );
+    final statement = AccountStatementData(
+      holder: _buyer,
+      accountNumber: 'SA44-2000-0001-2345',
+      periodLabel: 'Jan 2026',
+      openingBalance: 5000,
+      currency: 'SAR',
+      entries: [
+        StatementEntry(date: DateTime(2026, 1, 3), description: 'Invoice INV-2042', descriptionAr: 'فاتورة INV-2042', debit: 4485),
+        StatementEntry(date: DateTime(2026, 1, 12), description: 'Payment received', descriptionAr: 'دفعة واردة', credit: 4485),
+        StatementEntry(date: DateTime(2026, 1, 20), description: 'Service fee', descriptionAr: 'رسوم خدمة', debit: 150),
+      ],
+    );
+    final inventory = InventoryReportData(
+      warehouseName: 'Central Warehouse',
+      warehouseNameAr: 'المستودع المركزي',
+      reportDate: DateTime(2026, 1, 31),
+      currency: 'SAR',
+      items: const [
+        InventoryItem(sku: 'SKU-001', name: 'Steel Bracket', nameAr: 'كتيفة معدنية', quantity: 420, unitCost: 12.5, reorderLevel: 100, location: 'A-12'),
+        InventoryItem(sku: 'SKU-002', name: 'Copper Wire (m)', nameAr: 'سلك نحاسي (م)', quantity: 60, unitCost: 3.2, reorderLevel: 80, location: 'B-04'),
+        InventoryItem(sku: 'SKU-003', name: 'Plastic Housing', nameAr: 'غلاف بلاستيكي', quantity: 900, unitCost: 1.75, reorderLevel: 200, location: 'C-21'),
+      ],
+    );
+    final quotation = QuotationData(
+      quotationNumber: 'QT-0512',
+      issueDate: DateTime(2026, 2, 1),
+      validUntil: DateTime(2026, 3, 1),
+      seller: _seller,
+      buyer: _buyer,
+      currency: 'SAR',
+      terms: 'Prices valid for 30 days. 50% deposit required to confirm order.',
+      lines: const [
+        PdfInvoiceLine(description: 'Custom dashboard build', descriptionAr: 'بناء لوحة تحكم مخصصة', quantity: 1, unitPrice: 8000),
+        PdfInvoiceLine(description: 'Monthly maintenance (3 mo)', descriptionAr: 'صيانة شهرية (٣ أشهر)', quantity: 3, unitPrice: 500),
+      ],
+      providedSubtotal: 9500,
+      providedVatTotal: 1425,
+      providedGrandTotal: 10925,
+    );
+    final purchaseOrder = PurchaseOrderData(
+      poNumber: 'PO-7742',
+      issueDate: DateTime(2026, 2, 3),
+      buyer: _seller,
+      supplier: PdfParty(name: 'Al-Rashid Supplies', nameAr: 'مؤسسة الراشد للتوريدات'),
+      currency: 'SAR',
+      deliveryDate: DateTime(2026, 2, 20),
+      deliveryAddress: 'Warehouse 3, Riyadh Industrial City',
+      lines: const [
+        PurchaseOrderLine(description: 'A4 Paper Ream', descriptionAr: 'رزمة ورق A4', quantity: 200, unitPrice: 14, unit: 'ream'),
+        PurchaseOrderLine(description: 'Toner Cartridge', descriptionAr: 'خرطوشة حبر', quantity: 15, unitPrice: 180, unit: 'pc'),
+      ],
+      providedGrandTotal: 6325,
+    );
+    final deliveryNote = DeliveryNoteData(
+      noteNumber: 'DN-4410',
+      date: DateTime(2026, 2, 21),
+      sender: PdfParty(name: 'Al-Rashid Supplies', nameAr: 'مؤسسة الراشد للتوريدات'),
+      receiver: _seller,
+      orderReference: 'PO-7742',
+      carrier: 'SMSA Express',
+      lines: const [
+        DeliveryLine(description: 'A4 Paper Ream', descriptionAr: 'رزمة ورق A4', orderedQty: 200, deliveredQty: 200, unit: 'ream'),
+        DeliveryLine(description: 'Toner Cartridge', descriptionAr: 'خرطوشة حبر', orderedQty: 15, deliveredQty: 12, unit: 'pc'),
+      ],
+    );
+    final creditNote = CreditNoteData(
+      creditNoteNumber: 'CN-0089',
+      issueDate: DateTime(2026, 2, 20),
+      originalInvoiceNumber: 'INV-2042',
+      seller: _seller,
+      buyer: _buyer,
+      currency: 'SAR',
+      reason: 'Returned 1 onboarding workshop seat — scheduling conflict',
+      reasonAr: 'إرجاع مقعد واحد من ورشة التهيئة - تعارض في الجدول',
+      lines: const [
+        PdfInvoiceLine(description: 'Onboarding workshop (1 seat)', descriptionAr: 'ورشة تهيئة (مقعد واحد)', quantity: 1, unitPrice: 900),
+      ],
+      providedGrandTotal: 1035,
+    );
     final payslip = PayslipData(
       employer: _seller,
       employee: PdfParty(name: 'Sara Al-Otaibi', nameAr: 'سارة العتيبي'),
@@ -476,28 +659,42 @@ class _TemplatesScreenState extends State<TemplatesScreen> {
         PayComponent(label: 'Loan Repayment', labelAr: 'سداد قرض', amount: 500),
       ],
     );
-    final trial = TrialBalanceData(
+    final employeeReport = EmployeeReportData(
+      employee: PdfParty(name: 'Sara Al-Otaibi', nameAr: 'سارة العتيبي'),
+      employeeId: 'EMP-1183',
+      jobTitle: 'Senior Product Designer',
+      jobTitleAr: 'مصممة منتج أول',
+      department: 'Design',
+      departmentAr: 'التصميم',
+      manager: 'Lina Al-Fahad',
+      hireDate: DateTime(2022, 6, 1),
+      asOfDate: DateTime(2026, 2, 1),
+      currency: 'SAR',
+      compensation: const PdfReportSection(title: 'Monthly Compensation', titleAr: 'الراتب الشهري', lines: [
+        PdfReportLine(label: 'Basic Salary', labelAr: 'الراتب الأساسي', amount: 12000),
+        PdfReportLine(label: 'Housing Allowance', labelAr: 'بدل السكن', amount: 3000),
+        PdfReportLine(label: 'Transport', labelAr: 'بدل النقل', amount: 800),
+      ]),
+    );
+    final attendance = AttendanceReportData(
       organizationName: 'GeniusLink Co.',
       organizationNameAr: 'شركة جينيس لينك',
-      asOfDate: DateTime(2026, 1, 31),
-      currency: 'SAR',
+      periodLabel: 'January 2026',
+      workingDays: 22,
       rows: const [
-        TrialBalanceRow(accountCode: '1010', accountName: 'Cash', accountNameAr: 'النقدية', debit: 85000),
-        TrialBalanceRow(accountCode: '1200', accountName: 'Accounts Receivable', accountNameAr: 'المدينون', debit: 42000),
-        TrialBalanceRow(accountCode: '2010', accountName: 'Accounts Payable', accountNameAr: 'الدائنون', credit: 31000),
-        TrialBalanceRow(accountCode: '3000', accountName: 'Capital', accountNameAr: 'رأس المال', credit: 96000),
+        AttendanceRow(employeeName: 'Sara Al-Otaibi', employeeNameAr: 'سارة العتيبي', presentDays: 21, absentDays: 0, lateDays: 2, leaveDays: 1),
+        AttendanceRow(employeeName: 'Omar Nasser', employeeNameAr: 'عمر ناصر', presentDays: 18, absentDays: 2, lateDays: 4, leaveDays: 2),
+        AttendanceRow(employeeName: 'Huda Saleh', employeeNameAr: 'هدى صالح', presentDays: 22, absentDays: 0, lateDays: 0, leaveDays: 0),
       ],
     );
-    final statement = AccountStatementData(
-      holder: _buyer,
-      accountNumber: 'SA44-2000-0001-2345',
-      periodLabel: 'Jan 2026',
-      openingBalance: 5000,
-      currency: 'SAR',
-      entries: [
-        StatementEntry(date: DateTime(2026, 1, 3), description: 'Invoice INV-2042', descriptionAr: 'فاتورة INV-2042', debit: 4485),
-        StatementEntry(date: DateTime(2026, 1, 12), description: 'Payment received', descriptionAr: 'دفعة واردة', credit: 4485),
-        StatementEntry(date: DateTime(2026, 1, 20), description: 'Service fee', descriptionAr: 'رسوم خدمة', debit: 150),
+    final leaveReport = LeaveReportData(
+      organizationName: 'GeniusLink Co.',
+      organizationNameAr: 'شركة جينيس لينك',
+      asOfDate: DateTime(2026, 2, 1),
+      rows: const [
+        LeaveBalanceRow(employeeName: 'Sara Al-Otaibi', employeeNameAr: 'سارة العتيبي', leaveType: 'Annual', leaveTypeAr: 'سنوية', entitledDays: 21, takenDays: 8),
+        LeaveBalanceRow(employeeName: 'Omar Nasser', employeeNameAr: 'عمر ناصر', leaveType: 'Annual', leaveTypeAr: 'سنوية', entitledDays: 21, takenDays: 19),
+        LeaveBalanceRow(employeeName: 'Huda Saleh', employeeNameAr: 'هدى صالح', leaveType: 'Sick', leaveTypeAr: 'مرضية', entitledDays: 30, takenDays: 5),
       ],
     );
     final voucher = PaymentVoucherData(
@@ -514,21 +711,64 @@ class _TemplatesScreenState extends State<TemplatesScreen> {
     );
 
     const taxT = TaxInvoiceTemplate();
-    const payT = PayslipTemplate();
     const tbT = TrialBalanceTemplate();
+    const bsT = BalanceSheetTemplate();
+    const isT = IncomeStatementTemplate();
+    const cfT = CashFlowTemplate();
+    const brT = BudgetReportTemplate();
+    const csT = CustomerStatementTemplate();
     const stmtT = AccountStatementTemplate();
+    const invT = InventoryReportTemplate();
+    const qT = QuotationTemplate();
+    const poT = PurchaseOrderTemplate();
+    const dnT = DeliveryNoteTemplate();
+    const cnT = CreditNoteTemplate();
+    const payT = PayslipTemplate();
+    const erT = EmployeeReportTemplate();
+    const arT = AttendanceReportTemplate();
+    const lrT = LeaveReportTemplate();
     const pvT = PaymentVoucherTemplate();
 
     return [
-      _TemplateDemo(taxT, 'VAT · line items · QR · amount in words',
+      // Financial
+      _TemplateDemo(taxT, 'Financial', 'VAT · line items · QR · amount in words',
           (c) => taxT.build(invoice, context: c), (c) => taxT.validate(invoice, context: c)),
-      _TemplateDemo(payT, 'earnings · deductions · net pay',
-          (c) => payT.build(payslip, context: c), (c) => payT.validate(payslip, context: c)),
-      _TemplateDemo(tbT, 'debit = credit enforcement',
+      _TemplateDemo(tbT, 'Financial', 'debit = credit enforcement',
           (c) => tbT.build(trial, context: c), (c) => tbT.validate(trial, context: c)),
-      _TemplateDemo(stmtT, 'transactions · running balance',
+      _TemplateDemo(bsT, 'Financial', 'assets = liabilities + equity',
+          (c) => bsT.build(balanceSheet, context: c), (c) => bsT.validate(balanceSheet, context: c)),
+      _TemplateDemo(isT, 'Financial', 'gross · operating · net income + margins',
+          (c) => isT.build(incomeStatement, context: c), (c) => isT.validate(incomeStatement, context: c)),
+      _TemplateDemo(cfT, 'Financial', 'operating · investing · financing → cash',
+          (c) => cfT.build(cashFlow, context: c), (c) => cfT.validate(cashFlow, context: c)),
+      _TemplateDemo(brT, 'Financial', 'budget vs actual · variance %',
+          (c) => brT.build(budget, context: c), (c) => brT.validate(budget, context: c)),
+      _TemplateDemo(csT, 'Financial', 'aging analysis · running balance',
+          (c) => csT.build(customerStatement, context: c), (c) => csT.validate(customerStatement, context: c)),
+      _TemplateDemo(stmtT, 'Financial', 'transactions · running balance',
           (c) => stmtT.build(statement, context: c), (c) => stmtT.validate(statement, context: c)),
-      _TemplateDemo(pvT, 'amount in words · signatures',
+      _TemplateDemo(invT, 'Financial', 'stock valuation · low-stock flag',
+          (c) => invT.build(inventory, context: c), (c) => invT.validate(inventory, context: c)),
+      // Sales
+      _TemplateDemo(qT, 'Sales', 'validity period · totals',
+          (c) => qT.build(quotation, context: c), (c) => qT.validate(quotation, context: c)),
+      _TemplateDemo(poT, 'Sales', 'supplier order · delivery terms',
+          (c) => poT.build(purchaseOrder, context: c), (c) => poT.validate(purchaseOrder, context: c)),
+      _TemplateDemo(dnT, 'Sales', 'ordered vs delivered · sign-off',
+          (c) => dnT.build(deliveryNote, context: c), (c) => dnT.validate(deliveryNote, context: c)),
+      _TemplateDemo(cnT, 'Sales', 'return against original invoice',
+          (c) => cnT.build(creditNote, context: c), (c) => cnT.validate(creditNote, context: c)),
+      // HR
+      _TemplateDemo(payT, 'HR', 'earnings · deductions · net pay',
+          (c) => payT.build(payslip, context: c), (c) => payT.validate(payslip, context: c)),
+      _TemplateDemo(erT, 'HR', 'profile · tenure · compensation',
+          (c) => erT.build(employeeReport, context: c), (c) => erT.validate(employeeReport, context: c)),
+      _TemplateDemo(arT, 'HR', 'present/absent/late/leave · attendance rate',
+          (c) => arT.build(attendance, context: c), (c) => arT.validate(attendance, context: c)),
+      _TemplateDemo(lrT, 'HR', 'entitled · taken · remaining',
+          (c) => lrT.build(leaveReport, context: c), (c) => lrT.validate(leaveReport, context: c)),
+      // Vouchers
+      _TemplateDemo(pvT, 'Vouchers', 'amount in words · signatures',
           (c) => pvT.build(voucher, context: c), (c) => pvT.validate(voucher, context: c)),
     ];
   }
@@ -537,29 +777,44 @@ class _TemplatesScreenState extends State<TemplatesScreen> {
   Widget build(BuildContext context) {
     final gl = context.gl;
     final demos = _demos();
+    final filtered = _category == 'All' ? demos : demos.where((d) => d.category == _category).toList();
 
     return ListView(
       padding: const EdgeInsets.all(20),
       children: [
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 13),
-          decoration: BoxDecoration(color: gl.orange.withOpacity(0.08), borderRadius: const BorderRadius.all(GlRadius.lg), border: Border.all(color: gl.orange.withOpacity(0.26))),
+          decoration: BoxDecoration(color: gl.orange.withValues(alpha:0.08), borderRadius: const BorderRadius.all(GlRadius.lg), border: Border.all(color: gl.orange.withValues(alpha:0.26))),
           child: Row(children: [
             GlSectionMarker(gl.orange, height: 32),
             const SizedBox(width: 12),
-            Expanded(child: Text('Declarative business templates. Each one recomputes its totals with GeniusMoney and validates the figures with GeniusFinancialValidator before building a PdfDocumentDefinition from the same pdf.* components — so a document only renders when its arithmetic is provably correct.', style: GlType.body(context, size: 12.5, color: gl.fg2).copyWith(height: 1.5))),
+            Expanded(child: Text('${demos.length} declarative business templates across financial, sales, HR and vouchers. Each one recomputes its totals with GeniusMoney and validates the figures with GeniusFinancialValidator before building a PdfDocumentDefinition from the same pdf.* components — so a document only renders when its arithmetic is provably correct.', style: GlType.body(context, size: 12.5, color: gl.fg2).copyWith(height: 1.5))),
           ]),
         ),
         const SizedBox(height: 14),
-        Row(
+        Wrap(
+          crossAxisAlignment: WrapCrossAlignment.center,
+          spacing: 12,
+          runSpacing: 10,
           children: [
-            Text('OUTPUT LANGUAGE', style: GlType.label(context).copyWith(fontSize: 10)),
-            const SizedBox(width: 12),
-            GlSegmented<bool>(
-              value: _arabic,
-              segments: const {false: 'EN', true: 'ع (RTL)'},
-              onChanged: (v) => setState(() => _arabic = v),
-            ),
+            Row(mainAxisSize: MainAxisSize.min, children: [
+              Text('CATEGORY', style: GlType.label(context).copyWith(fontSize: 10)),
+              const SizedBox(width: 12),
+              GlSegmented<String>(
+                value: _category,
+                segments: {for (final c in _categories) c: c},
+                onChanged: (v) => setState(() => _category = v),
+              ),
+            ]),
+            Row(mainAxisSize: MainAxisSize.min, children: [
+              Text('OUTPUT LANGUAGE', style: GlType.label(context).copyWith(fontSize: 10)),
+              const SizedBox(width: 12),
+              GlSegmented<bool>(
+                value: _arabic,
+                segments: const {false: 'EN', true: 'ع (RTL)'},
+                onChanged: (v) => setState(() => _arabic = v),
+              ),
+            ]),
           ],
         ),
         const SizedBox(height: 16),
@@ -569,12 +824,13 @@ class _TemplatesScreenState extends State<TemplatesScreen> {
             spacing: 12,
             runSpacing: 12,
             children: [
-              for (final d in demos)
+              for (final d in filtered)
                 SizedBox(
                   width: (c.maxWidth - (cols - 1) * 12) / cols,
                   child: _TemplateCard(
                     title: _arabic ? d.template.nameAr : d.template.name,
                     id: d.template.id,
+                    category: d.category,
                     subtitle: d.subtitle,
                     valid: d.runValidate(_ctx).isValid,
                     onUse: () => _useDoc(d.buildDoc(_ctx)),
@@ -589,9 +845,10 @@ class _TemplatesScreenState extends State<TemplatesScreen> {
 }
 
 class _TemplateCard extends StatelessWidget {
-  const _TemplateCard({required this.title, required this.id, required this.subtitle, required this.valid, required this.onUse});
+  const _TemplateCard({required this.title, required this.id, required this.category, required this.subtitle, required this.valid, required this.onUse});
   final String title;
   final String id;
+  final String category;
   final String subtitle;
   final bool valid;
   final VoidCallback onUse;
@@ -605,11 +862,21 @@ class _TemplateCard extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           Container(
-            height: 96,
+            height: 112,
             decoration: const BoxDecoration(color: Colors.white, borderRadius: BorderRadius.vertical(top: GlRadius.lg)),
             padding: const EdgeInsets.all(14),
             alignment: Alignment.topLeft,
-            child: Text(title, style: const TextStyle(color: Color(0xFF111111), fontWeight: FontWeight.w800, fontSize: 15)),
+            child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                decoration: BoxDecoration(color: gl.accent.withValues(alpha:0.1), borderRadius: GlRadius.pill),
+                child: Text(category.toUpperCase(), style: TextStyle(fontSize: 8.5, color: gl.accent, letterSpacing: 0.5, fontWeight: FontWeight.w700)),
+              ),
+              const SizedBox(height: 8),
+              Expanded(
+                child: Text(title, maxLines: 2, overflow: TextOverflow.ellipsis, style: const TextStyle(color: Color(0xFF111111), fontWeight: FontWeight.w800, fontSize: 15)),
+              ),
+            ]),
           ),
           Padding(
             padding: const EdgeInsets.all(14),
@@ -708,7 +975,7 @@ class ApiReferenceScreen extends StatelessWidget {
           margin: const EdgeInsets.only(bottom: 1),
           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
           decoration: BoxDecoration(
-            color: i == active ? gl.accent.withOpacity(0.1) : Colors.transparent,
+            color: i == active ? gl.accent.withValues(alpha:0.1) : Colors.transparent,
             borderRadius: const BorderRadius.all(GlRadius.sm),
             border: Border(left: BorderSide(color: i == active ? gl.accent : Colors.transparent, width: 2)),
           ),

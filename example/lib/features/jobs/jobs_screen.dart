@@ -183,7 +183,7 @@ class _JobRow extends StatelessWidget {
     final isFail = job.status is JobFailed;
     final progress = job.status is JobRunning ? (job.status as JobRunning).progress : (job.status is JobCompleted ? 1.0 : 0.0);
     return Material(
-      color: selected ? gl.hover : (isFail ? gl.danger.withOpacity(0.05) : Colors.transparent),
+      color: selected ? gl.hover : (isFail ? gl.danger.withValues(alpha:0.05) : Colors.transparent),
       child: InkWell(
         onTap: onTap,
         child: Padding(
@@ -279,7 +279,7 @@ class _Drawer extends StatelessWidget {
                 const SizedBox(height: 14),
                 Container(
                   padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(color: gl.danger.withOpacity(0.07), borderRadius: const BorderRadius.all(GlRadius.md), border: Border.all(color: gl.danger.withOpacity(0.26))),
+                  decoration: BoxDecoration(color: gl.danger.withValues(alpha:0.07), borderRadius: const BorderRadius.all(GlRadius.md), border: Border.all(color: gl.danger.withValues(alpha:0.26))),
                   child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                     Text(failure.code, style: GlType.mono(context, size: 10.5, color: gl.danger, weight: FontWeight.w700)),
                     const SizedBox(height: 6),

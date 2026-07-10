@@ -12,6 +12,7 @@ import 'package:url_launcher/url_launcher.dart';
 import '../../application/contracts.dart';
 import '../../domain/generation.dart';
 import '../../domain/printing.dart';
+import '../../domain/sharing.dart';
 import '../../domain/value_objects.dart';
 
 /// Sends the document to the OS print pipeline (or browser print on web).
@@ -107,8 +108,35 @@ class PrintingShareGateway implements ShareGateway {
   bool get canShare => true;
 
   @override
+  Set<PdfShareTarget> get availableTargets => const <PdfShareTarget>{
+        PdfShareTarget.system,
+        PdfShareTarget.email,
+        PdfShareTarget.bluetooth,
+        PdfShareTarget.messaging,
+        PdfShareTarget.cloud,
+        PdfShareTarget.print,
+      };
+
+  @override
   Future<void> share(PdfGenerationResult result, {String? subject}) =>
       Printing.sharePdf(bytes: result.bytes, filename: result.fileName);
+
+  @override
+  Future<void> shareTo(
+    PdfGenerationResult result, {
+    required PdfShareTarget target,
+    String? subject,
+  }) {
+    // The OS share sheet is the router: it exposes email, Bluetooth, messaging
+    // and cloud targets. `print` is handled by the print pipeline instead.
+    if (target == PdfShareTarget.print) {
+      return Printing.layoutPdf(
+        name: result.fileName,
+        onLayout: (_) async => result.bytes,
+      );
+    }
+    return Printing.sharePdf(bytes: result.bytes, filename: result.fileName);
+  }
 }
 
 /// Portable "download/save" via the share sheet — on web this triggers a
@@ -122,7 +150,7 @@ class SharePdfFileGateway implements FileGateway {
 
   @override
   Future<PdfFileReference> save(PdfGenerationResult result,
-      {String? directory}) async {
+      {String? directory,}) async {
     await Printing.sharePdf(bytes: result.bytes, filename: result.fileName);
     return PdfFileReference(name: result.fileName, byteLength: result.bytes.length);
   }

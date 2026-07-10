@@ -64,7 +64,7 @@ class PdfDocumentBuilder {
       orientation: _orientation,
       margins: _margins,
       content: components,
-    ));
+    ),);
     return this;
   }
 
@@ -135,14 +135,111 @@ class PdfComponentFactory {
   PdfComponent barcode(String value, {String symbology = 'code128'}) =>
       PdfBarcode(value, symbology: symbology);
   PdfComponent qrCode(String value) => PdfQrCode(value);
-  PdfComponent chart({required String label}) => PdfChartPlaceholder(label: label);
+
+  /// A data-driven chart rendered natively to vector PDF.
+  PdfComponent chart({
+    required PdfChartType type,
+    required List<PdfChartSeries> series,
+    List<String> labels = const <String>[],
+    String? title,
+    double height = 170,
+  }) =>
+      PdfChart(
+          chartType: type,
+          series: series,
+          labels: labels,
+          title: title,
+          height: height,);
+  PdfComponent barChart(
+          {required List<String> labels,
+          required List<PdfChartSeries> series,
+          String? title,
+          double height = 170,}) =>
+      PdfChart(
+          chartType: PdfChartType.bar,
+          series: series,
+          labels: labels,
+          title: title,
+          height: height,);
+  PdfComponent lineChart(
+          {required List<String> labels,
+          required List<PdfChartSeries> series,
+          String? title,
+          double height = 170,}) =>
+      PdfChart(
+          chartType: PdfChartType.line,
+          series: series,
+          labels: labels,
+          title: title,
+          height: height,);
+  PdfComponent areaChart(
+          {required List<String> labels,
+          required List<PdfChartSeries> series,
+          String? title,
+          double height = 170,}) =>
+      PdfChart(
+          chartType: PdfChartType.area,
+          series: series,
+          labels: labels,
+          title: title,
+          height: height,);
+  PdfComponent pieChart(
+          {required List<String> labels,
+          required List<double> values,
+          String? title,
+          double height = 170,}) =>
+      PdfChart(
+          chartType: PdfChartType.pie,
+          series: [PdfChartSeries(name: title ?? 'Series', values: values)],
+          labels: labels,
+          title: title,
+          height: height,);
+
+  /// A single chart series (a bar group, line, area, or pie slice set).
+  PdfChartSeries series(String name, List<double> values, {int? color}) =>
+      PdfChartSeries(name: name, values: values, color: color);
+
+  /// Inline diagonal watermark (see [PdfPostProcessing] for a page-background one).
+  PdfComponent watermark(String text,
+          {double opacity = 0.12, double angle = -0.6, double fontSize = 48,}) =>
+      PdfWatermark(text, opacity: opacity, angle: angle, fontSize: fontSize);
+
+  /// A rubber-stamp label (e.g. PAID / CONFIDENTIAL).
+  PdfComponent stamp(String text,
+          {String tone = 'red', String? date, double angle = -0.25,}) =>
+      PdfStamp(text, tone: tone, date: date, angle: angle);
+
+  // ---- form fields (AcroForm) ----
+  PdfComponent textField(
+          {required String name,
+          String label = '',
+          String value = '',
+          double width = 220,
+          double height = 22,
+          bool multiline = false,}) =>
+      PdfTextFormField(
+          name: name,
+          label: label,
+          value: value,
+          width: width,
+          height: height,
+          multiline: multiline,);
+  PdfComponent checkboxField(
+          {required String name, String label = '', bool checked = false,}) =>
+      PdfCheckboxField(name: name, label: label, checked: checked);
+  PdfComponent signatureField(
+          {required String name,
+          String label = 'Signature',
+          double width = 200,
+          double height = 60,}) =>
+      PdfSignatureFormField(name: name, label: label, width: width, height: height);
 
   PdfComponent statusBadge({required String label, String tone = 'blue'}) =>
       PdfStatusBadge(label: label, tone: tone);
   PdfComponent infoBox(String text, {String tone = 'blue'}) =>
       PdfInfoBox(text, tone: tone);
-  PdfComponent signatureBlock({required String name, required String role}) =>
-      PdfSignatureBlock(name: name, role: role);
+  PdfComponent signatureBlock({required String name, required String role, String? dateLabel}) =>
+      PdfSignatureBlock(name: name, role: role, dateLabel: dateLabel);
   PdfComponent header({required String title}) => PdfHeader(title: title);
   PdfComponent footer({required String text}) => PdfFooter(text: text);
   PdfComponent pageNumber({String format = '{page} / {total}'}) =>

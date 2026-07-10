@@ -3,7 +3,7 @@
 // Operating / investing / financing activities → net change in cash. Validates
 // that opening + net change = closing cash.
 
-import 'package:super_pdf_generator/pdf_generator.dart';
+import 'package:super_pdf_generator/src/domain/components.dart';
 
 import '../../../domain/document.dart';
 import '../../../domain/financial/genius_financial_validator.dart';

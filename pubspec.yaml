@@ -4,32 +4,40 @@ description: >-
   Build, generate, preview, process, print and share PDF documents from
   structured data. Clean Architecture: the domain and application layers are
   pure Dart; Flutter, the `pdf` engine and `printing` are outer-ring adapters.
-version: 0.1.0
+version: 1.1.0
 publish_to: none
 
 environment:
-  sdk: ">=3.3.0 <4.0.0"
-  flutter: ">=3.19.0"
+  sdk: ">=3.6.0 <4.0.0"
+  flutter: ">=3.27.0"
 
 dependencies:
   flutter:
     sdk: flutter
-  meta: ^1.11.0
+  meta: ^1.15.0
   # Infrastructure-only adapters. The domain/application layers never import
   # these — the architectural boundary test in test/architecture asserts it.
-  pdf: ^3.10.8
-  printing: ^5.12.0
-  path_provider: ^2.1.2
+  pdf: ^3.11.1
+  printing: ^5.13.0
+  path_provider: ^2.1.5
   # Syncfusion PDF engine — adopted for true page-level processing
-  # (merge / split / extract / rotate / watermark) and document introspection.
-  # Lives strictly in infrastructure behind the PdfRenderer / PdfProcessor ports.
+  # (merge / split / extract / rotate / watermark), introspection, document
+  # security (encryption + permissions) and PDF/A archival export. Pinned to the
+  # reviewed 32.x line; lives strictly in infrastructure behind the ports.
   syncfusion_flutter_pdf: ^32.2.4
+  # Raster image codecs (PNG/JPEG) for the image + HTML export pipeline.
+  # Infrastructure-only; used by SyncfusionPdfExporter.
+  image: ^4.2.0
+  # Barcode / QR symbologies for the barcode & QR components. Re-exported by
+  # `pdf` (pw.BarcodeWidget); declared explicitly as we depend on it directly.
+  # Infrastructure-only; used by the pw mapper.
+  barcode: ^2.2.8
   # Email compose channel (mailto:) for the EmailGateway adapter.
-  url_launcher: ^6.2.5
+  url_launcher: ^6.3.0
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
-  flutter_lints: ^3.0.0
+  flutter_lints: ^5.0.0
 
 flutter: {}

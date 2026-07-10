@@ -38,7 +38,7 @@ void main() {
         }
       }
       expect(offenders, isEmpty,
-          reason: 'Domain must be pure Dart:\n${offenders.join('\n')}');
+          reason: 'Domain must be pure Dart:\n${offenders.join('\n')}',);
     });
 
     test('application never imports Flutter, dart:ui, dart:io, pdf or printing', () {
@@ -50,7 +50,7 @@ void main() {
         }
       }
       expect(offenders, isEmpty,
-          reason: 'Application must be framework-independent:\n${offenders.join('\n')}');
+          reason: 'Application must be framework-independent:\n${offenders.join('\n')}',);
     });
 
     test('infrastructure is the only layer allowed to import the pdf engine', () {
@@ -59,7 +59,7 @@ void main() {
       final importsPdf = dartFilesUnder('lib/src/infrastructure')
           .any((f) => f.readAsStringSync().contains("package:pdf/"));
       expect(importsPdf, isTrue,
-          reason: 'The pdf engine should be adapted in infrastructure.');
+          reason: 'The pdf engine should be adapted in infrastructure.',);
     });
   });
 }

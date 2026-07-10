@@ -42,7 +42,7 @@ class GeniusMoney {
 
   factory GeniusMoney.zero({String currency = 'SAR', int decimalPlaces = 2}) =>
       GeniusMoney.fromMinorUnits(0,
-          currency: currency, decimalPlaces: decimalPlaces);
+          currency: currency, decimalPlaces: decimalPlaces,);
 
   final int minorUnits;
   final String currency;

@@ -36,10 +36,10 @@ class PdfGenerationRequest {
       PdfGenerationRequest(
         fileName: (json['fileName'] as String?) ?? 'document.pdf',
         document: PdfDocumentDefinition.fromJson(
-            (json['document'] as Map? ?? const {}).cast<String, Object?>()),
+            (json['document'] as Map? ?? const {}).cast<String, Object?>(),),
         processing: json['processing'] is Map
             ? PdfPostProcessing.fromJson(
-                (json['processing']! as Map).cast<String, Object?>())
+                (json['processing']! as Map).cast<String, Object?>(),)
             : const PdfPostProcessing(),
       );
 }
@@ -53,6 +53,8 @@ class PdfPostProcessing {
   const PdfPostProcessing({
     this.header = true,
     this.pageNumbers = true,
+    this.headerText,
+    this.footerText,
     this.watermarkText,
     this.watermarkOpacity = 0.12,
     this.watermarkPosition = PdfWatermarkPosition.center,
@@ -60,6 +62,14 @@ class PdfPostProcessing {
 
   final bool header;
   final bool pageNumbers;
+
+  /// Optional running-header template. Supports tokens {title} {author} {page}
+  /// {total} {date} {time} {datetime}. When null the header shows title+author.
+  final String? headerText;
+
+  /// Optional running-footer template with the same tokens. When null the
+  /// footer shows 'Folio' and 'Page {page} / {total}'.
+  final String? footerText;
   final String? watermarkText;
   final double watermarkOpacity;
   final PdfWatermarkPosition watermarkPosition;
@@ -70,6 +80,8 @@ class PdfPostProcessing {
   PdfPostProcessing copyWith({
     bool? header,
     bool? pageNumbers,
+    String? headerText,
+    String? footerText,
     String? watermarkText,
     double? watermarkOpacity,
     PdfWatermarkPosition? watermarkPosition,
@@ -78,6 +90,8 @@ class PdfPostProcessing {
       PdfPostProcessing(
         header: header ?? this.header,
         pageNumbers: pageNumbers ?? this.pageNumbers,
+        headerText: headerText ?? this.headerText,
+        footerText: footerText ?? this.footerText,
         watermarkText: clearWatermark ? null : (watermarkText ?? this.watermarkText),
         watermarkOpacity: watermarkOpacity ?? this.watermarkOpacity,
         watermarkPosition: watermarkPosition ?? this.watermarkPosition,
@@ -86,6 +100,8 @@ class PdfPostProcessing {
   Map<String, Object?> toJson() => <String, Object?>{
         'header': header,
         'pageNumbers': pageNumbers,
+        'headerText': headerText,
+        'footerText': footerText,
         'watermarkText': watermarkText,
         'watermarkOpacity': watermarkOpacity,
         'watermarkPosition': watermarkPosition.name,
@@ -95,6 +111,8 @@ class PdfPostProcessing {
       PdfPostProcessing(
         header: json['header'] as bool? ?? true,
         pageNumbers: json['pageNumbers'] as bool? ?? true,
+        headerText: json['headerText'] as String?,
+        footerText: json['footerText'] as String?,
         watermarkText: json['watermarkText'] as String?,
         watermarkOpacity: (json['watermarkOpacity'] as num?)?.toDouble() ?? 0.12,
         watermarkPosition: _wm(json['watermarkPosition']),

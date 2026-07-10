@@ -6,7 +6,6 @@
 // processing runs losslessly through Syncfusion on the main isolate.
 
 import '../../application/contracts.dart';
-import '../../domain/generation.dart';
 import '../../domain/processing.dart';
 import 'syncfusion_pdf_processor.dart';
 

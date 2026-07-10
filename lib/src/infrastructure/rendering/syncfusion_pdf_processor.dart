@@ -7,7 +7,7 @@
 // ring, behind the [PdfRenderer.process] / [PdfInspector] ports.
 
 import 'dart:typed_data';
-import 'dart:ui' show Rect;
+import 'dart:ui' show Offset, Rect;
 
 import 'package:syncfusion_flutter_pdf/pdf.dart' as sf;
 
@@ -51,12 +51,27 @@ class SyncfusionPdfProcessor implements PdfInspector {
   // ── operations ──
 
   Future<PdfProcessingResult> _merge(
-      List<PdfInputFile> inputs, String fileName, DateTime started) async {
+      List<PdfInputFile> inputs, String fileName, DateTime started,) async {
     if (inputs.isEmpty) {
       throw const ProcessingFailure(code: 'MERGE_EMPTY', message: 'No input files to merge.');
     }
+    // Syncfusion's Flutter PDF engine has no direct multi-document merge API
+    // (unlike its .NET sibling). The supported approach is to render each
+    // source page to a PdfTemplate and draw it into a freshly-sized section
+    // of the output document — a new section per page preserves mixed page
+    // sizes/orientations (A4 + Letter + landscape...) pixel-for-pixel.
     final out = sf.PdfDocument();
-    // sf.PdfDocument.merge(out, inputs.map((i) => i.bytes).toList());
+    for (final input in inputs) {
+      final loaded = sf.PdfDocument(inputBytes: input.bytes);
+      for (var i = 0; i < loaded.pages.count; i++) {
+        final template = loaded.pages[i].createTemplate();
+        final section = out.sections!.add();
+        section.pageSettings.size = template.size;
+        section.pageSettings.margins.all = 0;
+        section.pages.add().graphics.drawPdfTemplate(template, Offset.zero);
+      }
+      loaded.dispose();
+    }
     final bytes = await _save(out);
     final pages = out.pages.count;
     out.dispose();
@@ -64,7 +79,7 @@ class SyncfusionPdfProcessor implements PdfInspector {
   }
 
   Future<PdfProcessingResult> _split(
-      PdfInputFile input, List<PdfPageRange> ranges, DateTime started) async {
+      PdfInputFile input, List<PdfPageRange> ranges, DateTime started,) async {
     final outputs = <PdfGenerationResult>[];
     for (final (i, range) in ranges.indexed) {
       final doc = sf.PdfDocument(inputBytes: input.bytes);
@@ -81,7 +96,7 @@ class SyncfusionPdfProcessor implements PdfInspector {
         fileName: 'split-${i + 1}.pdf',
         pageCount: count,
         elapsed: DateTime.now().difference(started),
-      ));
+      ),);
     }
     if (outputs.isEmpty) {
       throw const ProcessingFailure(code: 'SPLIT_EMPTY', message: 'No pages matched the given ranges.');
@@ -90,7 +105,7 @@ class SyncfusionPdfProcessor implements PdfInspector {
   }
 
   Future<PdfProcessingResult> _extract(
-      PdfInputFile input, List<int> pages, String fileName, DateTime started) async {
+      PdfInputFile input, List<int> pages, String fileName, DateTime started,) async {
     final doc = sf.PdfDocument(inputBytes: input.bytes);
     final keep = pages.map((p) => p - 1).where((p) => p >= 0 && p < doc.pages.count).toSet();
     if (keep.isEmpty) {
@@ -105,7 +120,7 @@ class SyncfusionPdfProcessor implements PdfInspector {
   }
 
   Future<PdfProcessingResult> _rotate(
-      PdfInputFile input, List<int> pages, int quarterTurns, DateTime started) async {
+      PdfInputFile input, List<int> pages, int quarterTurns, DateTime started,) async {
     final doc = sf.PdfDocument(inputBytes: input.bytes);
     final targets = pages.isEmpty
         ? {for (var i = 0; i < doc.pages.count; i++) i}
@@ -121,7 +136,7 @@ class SyncfusionPdfProcessor implements PdfInspector {
   }
 
   Future<PdfProcessingResult> _watermark(
-      PdfInputFile input, String text, double opacity, DateTime started) async {
+      PdfInputFile input, String text, double opacity, DateTime started,) async {
     final doc = sf.PdfDocument(inputBytes: input.bytes);
     final font = sf.PdfStandardFont(sf.PdfFontFamily.helvetica, 48, style: sf.PdfFontStyle.bold);
     final brush = sf.PdfSolidBrush(sf.PdfColor(120, 124, 132));
@@ -163,7 +178,7 @@ class SyncfusionPdfProcessor implements PdfInspector {
           widthPt: size.width,
           heightPt: size.height,
           rotationDegrees: _degrees(doc.pages[i].rotation),
-        ));
+        ),);
       }
       return PdfDocumentInfo(
         pageCount: doc.pages.count,
@@ -231,7 +246,7 @@ class SyncfusionPdfProcessor implements PdfInspector {
   }
 
   PdfProcessingResult _single(
-      Uint8List bytes, String name, int pages, String op, DateTime started) {
+      Uint8List bytes, String name, int pages, String op, DateTime started,) {
     return PdfProcessingResult(
       operation: op,
       outputs: [

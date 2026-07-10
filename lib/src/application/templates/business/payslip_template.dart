@@ -3,7 +3,6 @@
 // A monthly payslip: earnings and deductions with a validated net pay
 // (net = earnings − deductions).
 
-import '../../../domain/components.dart';
 import '../../../domain/document.dart';
 import '../../../domain/financial/genius_financial_validator.dart';
 import '../../../domain/financial/genius_money.dart';
@@ -96,7 +95,7 @@ class PayslipTemplate extends PdfTemplate<PayslipData> {
     final words = amountInWords(net,
         currencyCode: data.currency,
         language: ar ? AmountWordsLanguage.arabic : AmountWordsLanguage.english,
-        fractionDigits: cur.decimalPlaces);
+        fractionDigits: cur.decimalPlaces,);
 
     return pdfDocument()
         .metadata(title: '${ar ? 'قسيمة راتب' : 'Payslip'} — ${data.periodLabel}', author: data.employer.name)

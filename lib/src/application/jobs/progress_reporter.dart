@@ -25,7 +25,7 @@ class StreamProgressReporter implements ProgressReporter {
 
   StreamController<PdfJobStatus> _controller(String id) =>
       _controllers.putIfAbsent(
-          id, () => StreamController<PdfJobStatus>.broadcast());
+          id, () => StreamController<PdfJobStatus>.broadcast(),);
 
   @override
   void report(String jobId, PdfJobStatus status) {

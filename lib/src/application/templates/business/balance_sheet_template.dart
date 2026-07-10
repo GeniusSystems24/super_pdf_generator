@@ -3,7 +3,7 @@
 // Assets / liabilities / equity statement with the accounting-equation balance
 // check (Assets = Liabilities + Equity) enforced by GeniusFinancialValidator.
 
-import 'package:super_pdf_generator/pdf_generator.dart';
+import 'package:super_pdf_generator/src/domain/components.dart';
 
 import '../../../domain/document.dart';
 import '../../../domain/financial/genius_financial_validator.dart';

@@ -29,7 +29,7 @@ void main() {
             pdf.heading('Invoice'),
             pdf.table(columns: const ['A', 'B'], rows: const [
               ['1', '2'],
-            ]),
+            ],),
             pdf.statusBadge(label: 'PAID', tone: 'green'),
           ])
           .build();
@@ -52,7 +52,7 @@ void main() {
     test('a table with a short row reports a warning', () {
       final table = pdf.table(columns: const ['A', 'B', 'C'], rows: const [
         ['1', '2'],
-      ]) as PdfTable;
+      ],) as PdfTable;
       final issues = table.validate();
       expect(issues.any((i) => i.severity == 'warning'), isTrue);
     });
@@ -74,6 +74,8 @@ void main() {
         PrintingFailure(code: 'P', message: 'm'),
         SharingFailure(code: 'S', message: 'm'),
         ProcessingFailure(code: 'PR', message: 'm'),
+        SecurityFailure(code: 'SEC', message: 'm'),
+        ExportFailure(code: 'EX', message: 'm'),
         UnsupportedFeatureFailure(code: 'U', message: 'm'),
         PermissionFailure(code: 'PM', message: 'm'),
         CancelledFailure(),

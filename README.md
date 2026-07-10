@@ -120,10 +120,20 @@ if (result.isValid) {
 }
 ```
 
-Built-ins (also in `defaultTemplateRegistry()`): **tax invoice** (VAT + QR),
-**payslip**, **trial balance** (debit=credit), **account statement** (running
-balance) and **payment/receipt voucher**. Each honours `PdfTemplateContext`'s
-language, so Arabic output is RTL with Arabic labels and amount-in-words.
+Built-ins (also in `defaultTemplateRegistry()`): 30 templates across four
+categories —
+**Financial**: tax invoice (VAT + QR), trial balance (debit=credit), balance
+sheet (assets=liabilities+equity), income statement (margins), cash flow,
+budget report (variance %), customer statement (aging), account statement
+(running balance), inventory report (stock valuation).
+**Sales**: quotation, purchase order, delivery note (ordered vs delivered),
+credit note.
+**HR**: payslip, employee report, attendance report, leave balance report.
+**Vouchers**: payment/receipt, expense, petty cash, journal, contra, bank
+payment/receipt, cash payment/receipt, salary, advance, refund, deposit — all
+sharing one `VoucherTemplateBase`.
+Each honours `PdfTemplateContext`'s language, so Arabic output is RTL with
+Arabic labels and amount-in-words.
 
 ## Lossless PDF processing & introspection
 
@@ -139,8 +149,37 @@ rotation) without rendering.
 `PrintGateway.printDocument` now takes optional `PrintSettings` (copies,
 colour, duplex, paper size, page ranges) and a target `PrinterDevice`;
 `client.listPrinters()` enumerates devices via `PrinterDiscovery`, and
-`client.emailCompose(...)` opens a pre-filled email. The OS share sheet
-(`client.share`) continues to expose Bluetooth and installed apps as targets.
+`client.emailCompose(...)` opens a pre-filled email. `client.shareTo(...)`
+routes to a `PdfShareTarget` (system, email, Bluetooth, messaging, cloud,
+print), and `client.availableShareTargets` reports what the platform sheet
+exposes; `client.share(...)` opens the full sheet (Bluetooth + installed apps).
+
+## Security, export & intelligence (1.0.0)
+
+`createStudioClient()` also wires document security, an export pipeline and an
+offline content analyzer — each behind its own port, engines in infrastructure.
+
+- **Security** — `client.secure(...)` encrypts (RC4 / AES up to AES-256) with an
+  owner/user password and a typed `PdfDocumentPermission` set;
+  `client.unlock(...)` removes protection given the password.
+  `PdfSecurityOptions.toJson()` redacts passwords by design.
+- **Export** — `client.export(...)` converts an existing PDF to HTML, raster
+  images (PNG/JPEG), plain text, or PDF/A (A1b/A2b/A3b).
+- **Intelligence** — `client.analyze(...)` returns a `PdfContentAnalysis`
+  (word/heading/table/image counts, reading time, script, density) and
+  `client.suggestLayout(...)` returns bilingual `PdfLayoutSuggestion`s. The
+  default `HeuristicPdfIntelligence` runs entirely offline — no network, no
+  model; inject your own `PdfIntelligence` for a smarter analyzer.
+
+```dart
+final locked = await client.secure(PdfSecurityRequest(
+  input: PdfInputFile(name: 'inv.pdf', bytes: bytes),
+  options: const PdfSecurityOptions(userPassword: 'open-sesame'),
+));
+final pages = await client.export(PdfImageExportRequest(
+  input: PdfInputFile(name: 'inv.pdf', bytes: bytes), dpi: 150));
+final analysis = await client.analyze(invoice); // Result<PdfContentAnalysis>
+```
 
 ---
 
@@ -263,7 +302,10 @@ flutter test
 | Suite                                   | What it guards                                        |
 |-----------------------------------------|-------------------------------------------------------|
 | `test/domain/domain_test.dart`          | builder, JSON round-trip, validation, failure taxonomy|
+| `test/domain/security_export_test.dart` | security + export value types (redaction, formats)    |
 | `test/application/job_queue_test.dart`  | run / retry-with-backoff / cancel / priority ordering |
+| `test/application/intelligence_test.dart`| offline analyzer counts, script detection, suggestions|
+| `test/application/templates_test.dart`  | voucher-family registry + a template builds           |
 | `test/architecture/boundary_test.dart`  | layer import rules (executable dependency cruiser)    |
 | `test/public_api/api_compat_test.dart`  | public surface + discriminated unions compile & behave|
 
@@ -282,6 +324,9 @@ Two independent token systems (as in the Web proposal):
 
 ## Status
 
-Phase Two. The library is feature-complete for the approved scope; the demo
-exercises every public API. Font embedding for full Arabic shaping is wired
-through `FontRegistry` (register TTF bytes via `createStudioClient(arabicFontBytes: …)`).
+**1.0.0 — stable.** The public barrel is the committed API contract under SemVer.
+The library is feature-complete for the approved scope plus the 1.0.0 additions
+(document security, export pipeline, offline content intelligence, the full
+voucher family and share targets); the demo exercises the core public API. Font
+embedding for full Arabic shaping is wired through `FontRegistry` (register TTF
+bytes via `createStudioClient(arabicFontBytes: …)`). See `CHANGELOG.md`.

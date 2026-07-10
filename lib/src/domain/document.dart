@@ -82,10 +82,10 @@ class PdfPageDefinition {
             ? PdfPageSize.fromJson((json['size']! as Map).cast<String, Object?>())
             : PdfPageSize.a4,
         orientation: enumByName(PdfPageOrientation.values, json['orientation'],
-            PdfPageOrientation.portrait),
+            PdfPageOrientation.portrait,),
         margins: json['margins'] is Map
             ? PdfMargins.fromJson(
-                (json['margins']! as Map).cast<String, Object?>())
+                (json['margins']! as Map).cast<String, Object?>(),)
             : const PdfMargins.all(36),
         content: (json['content'] as List? ?? const [])
             .map((e) => PdfComponent.fromJson((e as Map).cast<String, Object?>()))
@@ -160,7 +160,7 @@ class PdfDocumentDefinition {
   factory PdfDocumentDefinition.fromJson(Map<String, Object?> json) =>
       PdfDocumentDefinition(
         metadata: PdfDocumentMetadata.fromJson(
-            (json['metadata'] as Map? ?? const {}).cast<String, Object?>()),
+            (json['metadata'] as Map? ?? const {}).cast<String, Object?>(),),
         theme: json['theme'] is Map
             ? PdfTheme.fromJson((json['theme']! as Map).cast<String, Object?>())
             : const PdfTheme(),
@@ -168,7 +168,7 @@ class PdfDocumentDefinition {
             enumByName(PdfDirection.values, json['direction'], PdfDirection.ltr),
         pages: (json['pages'] as List? ?? const [])
             .map((e) =>
-                PdfPageDefinition.fromJson((e as Map).cast<String, Object?>()))
+                PdfPageDefinition.fromJson((e as Map).cast<String, Object?>()),)
             .toList(),
         schemaVersion: (json['schemaVersion'] as num?)?.toInt() ?? 1,
       );

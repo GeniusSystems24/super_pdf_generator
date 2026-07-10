@@ -9,6 +9,7 @@
 import 'dart:typed_data';
 
 import '../application/contracts.dart';
+import '../application/intelligence.dart';
 import '../application/jobs/job_queue.dart';
 import '../application/jobs/job_repository.dart';
 import '../application/jobs/progress_reporter.dart';
@@ -20,8 +21,10 @@ import '../application/pdf_client.dart';
 import '../application/usecases.dart';
 import '../infrastructure/platform/platform_gateways.dart';
 import '../infrastructure/rendering/isolate_render_runner.dart';
+import '../infrastructure/rendering/pdf_exporter.dart';
 import '../infrastructure/rendering/processing_renderer.dart';
 import '../infrastructure/rendering/syncfusion_pdf_processor.dart';
+import '../infrastructure/rendering/syncfusion_pdf_security.dart';
 import '../infrastructure/rendering/widget_pdf_renderer.dart';
 import '../infrastructure/support.dart';
 
@@ -43,6 +46,9 @@ PdfClient createPdfClient({
   PdfInspector? inspector,
   PrinterDiscovery? printerDiscovery,
   EmailGateway? emailGateway,
+  PdfSecurityService? security,
+  PdfExporter? exporter,
+  PdfIntelligence? intelligence = const HeuristicPdfIntelligence(),
 }) {
   final generate = GenerateDocument(renderer, logger);
   final process = ProcessDocument(renderer, logger);
@@ -68,6 +74,9 @@ PdfClient createPdfClient({
     inspect: inspector == null ? null : InspectDocument(inspector, logger),
     printerDiscovery: printerDiscovery,
     emailGateway: emailGateway,
+    secure: security == null ? null : SecureDocument(security, logger),
+    export: exporter == null ? null : ExportDocument(exporter, logger),
+    analyze: intelligence == null ? null : AnalyzeDocument(intelligence, logger),
   );
 }
 
@@ -100,5 +109,8 @@ PdfClient createStudioClient({
     inspector: processor,
     printerDiscovery: const PrintingPrinterDiscovery(),
     emailGateway: const UrlLauncherEmailGateway(),
+    security: const SyncfusionPdfSecurityService(),
+    exporter: const SyncfusionPdfExporter(),
+    intelligence: const HeuristicPdfIntelligence(),
   );
 }

@@ -25,6 +25,10 @@ export 'src/domain/generation.dart';
 export 'src/domain/processing.dart';
 export 'src/domain/printing.dart';
 export 'src/domain/jobs.dart';
+export 'src/domain/sharing.dart';
+export 'src/domain/security.dart';
+export 'src/domain/export.dart';
+export 'src/domain/intelligence.dart';
 
 // ---- Domain: financial (audit-grade money, rounding, validation) ----------
 export 'src/domain/financial/financial.dart';
@@ -43,6 +47,9 @@ export 'src/application/templates/templates.dart';
 
 // ---- Application: use cases ------------------------------------------------
 export 'src/application/usecases.dart';
+
+// ---- Application: intelligence (offline heuristic analyzer) ---------------
+export 'src/application/intelligence.dart';
 
 // ---- Application: job management (composed collaborators) -----------------
 export 'src/application/jobs/queue_policy.dart';

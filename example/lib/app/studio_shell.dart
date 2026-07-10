@@ -9,6 +9,7 @@ import '../features/batch/batch_screen.dart';
 import '../features/jobs/jobs_screen.dart';
 import '../features/settings/settings_screen.dart';
 import '../features/reference/reference_screens.dart';
+import '../features/extend/advanced_screens.dart';
 import '../shared/gl_tokens.dart';
 import '../shared/gl_widgets.dart';
 
@@ -75,6 +76,12 @@ class _StudioShellState extends State<StudioShell> {
         (c) => const PerformanceScreen()),
     StudioDest('EXTEND', 'Templates', Icons.dashboard_customize_outlined, const Color(0xFF8D90A0),
         (c) => TemplatesScreen(builder: widget.builder, onOpen: () => _goByLabel('Document Builder'))),
+    StudioDest('EXTEND', 'Security', Icons.lock_outline_rounded, const Color(0xFF8D90A0),
+        (c) => SecurityScreen(client: widget.client)),
+    StudioDest('EXTEND', 'Export', Icons.file_download_outlined, const Color(0xFF8D90A0),
+        (c) => ExportScreen(client: widget.client)),
+    StudioDest('EXTEND', 'Intelligence', Icons.insights_rounded, const Color(0xFF8D90A0),
+        (c) => IntelligenceScreen(client: widget.client)),
     StudioDest('EXTEND', 'API Reference', Icons.code_rounded, const Color(0xFF8D90A0),
         (c) => const ApiReferenceScreen()),
     StudioDest('EXTEND', 'Settings', Icons.settings_outlined, const Color(0xFF8D90A0),
@@ -266,7 +273,7 @@ class _AppBar extends StatelessWidget {
       decoration: BoxDecoration(border: Border(bottom: BorderSide(color: gl.border))),
       child: Row(
         children: [
-          Text('$group', style: GlType.label(context).copyWith(fontSize: 10)),
+          Text(group, style: GlType.label(context).copyWith(fontSize: 10)),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 8),
             child: Text('•', style: TextStyle(color: gl.fg4)),

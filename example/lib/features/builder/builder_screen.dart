@@ -367,7 +367,6 @@ class _SourceView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final gl = context.gl;
     final m = controller.metadata;
     final buffer = StringBuffer()
       ..writeln('final document = pdfDocument()')

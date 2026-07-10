@@ -92,7 +92,7 @@ class PaymentVoucherTemplate extends PdfTemplate<PaymentVoucherData> {
     final words = amountInWords(net,
         currencyCode: data.currency,
         language: ar ? AmountWordsLanguage.arabic : AmountWordsLanguage.english,
-        fractionDigits: cur.decimalPlaces);
+        fractionDigits: cur.decimalPlaces,);
 
     return pdfDocument()
         .metadata(title: '${ar ? titleAr : titleEn} ${data.voucherNumber}', author: data.payer.name)
@@ -115,7 +115,7 @@ class PaymentVoucherTemplate extends PdfTemplate<PaymentVoucherData> {
       pdf.spacer(10),
       pdf.keyValue([
         MapEntry(isPayment ? (ar ? 'المدفوع له' : 'Pay To') : (ar ? 'المستلم من' : 'Received From'),
-            ar ? (data.payee.nameAr ?? data.payee.name) : data.payee.name),
+            ar ? (data.payee.nameAr ?? data.payee.name) : data.payee.name,),
         MapEntry(ar ? 'المبلغ' : 'Amount', fmt(data.amount)),
         if (data.fee != 0) MapEntry(ar ? 'الرسوم' : 'Fee', fmt(data.fee)),
         if (data.commission != 0) MapEntry(ar ? 'العمولة' : 'Commission', fmt(data.commission)),

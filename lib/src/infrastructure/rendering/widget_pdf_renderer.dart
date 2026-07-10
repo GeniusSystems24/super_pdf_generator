@@ -34,7 +34,7 @@ class WidgetPdfRenderer implements PdfRenderer {
 
   @override
   Future<PdfRenderResult> render(PdfRenderRequest request,
-      [PdfRenderContext? context]) async {
+      [PdfRenderContext? context,]) async {
     context?.onProgress?.call(const PdfGenerationProgress(fraction: 0.15, note: 'preparing'));
     final (bytes, pages) = await renderDocument(
       request.document,
@@ -73,7 +73,7 @@ class WidgetPdfRenderer implements PdfRenderer {
             fileName: 'split-${i + 1}.pdf',
             pageCount: slice.length,
             elapsed: DateTime.now().difference(started),
-          ));
+          ),);
         }
         if (outputs.isEmpty) throw const ProcessingFailure(code: 'SPLIT_EMPTY', message: 'No pages matched the given ranges.');
         return PdfProcessingResult(outputs: outputs, operation: 'split');
@@ -100,7 +100,7 @@ class WidgetPdfRenderer implements PdfRenderer {
   }
 
   PdfProcessingResult _single(
-      Uint8List bytes, String name, int pages, String op, DateTime started) {
+      Uint8List bytes, String name, int pages, String op, DateTime started,) {
     return PdfProcessingResult(
       operation: op,
       outputs: [
@@ -157,7 +157,7 @@ class WidgetPdfRenderer implements PdfRenderer {
             swap ? im.widthPt : im.heightPt,
           ),
           build: (context) {
-            pw.Widget page = turns == 0
+            final pw.Widget page = turns == 0
                 ? pw.Image(provider, fit: pw.BoxFit.contain)
                 : pw.Center(
                     child: pw.Transform.rotate(
@@ -178,9 +178,9 @@ class WidgetPdfRenderer implements PdfRenderer {
                       angle: math.pi / 4,
                       child: pw.Text(
                         watermark,
-                        style: pw.TextStyle(
+                        style: const pw.TextStyle(
                             fontSize: 64,
-                            color: pdflib.PdfColor.fromInt(0xFF787C84)),
+                            color: pdflib.PdfColor.fromInt(0xFF787C84),),
                       ),
                     ),
                   ),

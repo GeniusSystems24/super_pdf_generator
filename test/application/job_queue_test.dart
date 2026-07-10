@@ -43,7 +43,7 @@ void main() {
         runner: (request, {onProgress}) async {
           attempts++;
           if (attempts < 2) {
-            return Result.err(const FontFailure(code: 'F', message: 'font missing'));
+            return const Result.err(FontFailure(code: 'F', message: 'font missing'));
           }
           return Result.ok(_ok(request.fileName));
         },
@@ -58,7 +58,7 @@ void main() {
     test('does not retry a non-retryable failure', () async {
       final queue = JobQueue(
         runner: (request, {onProgress}) async =>
-            Result.err(const ValidationFailure(code: 'V', message: 'bad')),
+            const Result.err(ValidationFailure(code: 'V', message: 'bad')),
       );
       final job = queue.enqueue(_req('bad.pdf'));
       await Future<void>.delayed(const Duration(milliseconds: 40));

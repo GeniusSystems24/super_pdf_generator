@@ -41,13 +41,13 @@ sealed class PdfComponent {
         return PdfText(json['text'] as String? ?? '');
       case 'heading':
         return PdfHeading(json['text'] as String? ?? '',
-            level: (json['level'] as num?)?.toInt() ?? 2);
+            level: (json['level'] as num?)?.toInt() ?? 2,);
       case 'paragraph':
         return PdfParagraph(json['text'] as String? ?? '');
       case 'richText':
         return PdfRichText(json['spans'] is List
             ? (json['spans'] as List).map((e) => e.toString()).toList()
-            : const <String>[]);
+            : const <String>[],);
       case 'spacer':
         return PdfSpacer((json['size'] as num?)?.toDouble() ?? 12);
       case 'divider':
@@ -66,7 +66,7 @@ sealed class PdfComponent {
         return PdfWrap(kids(json['children']));
       case 'grid':
         return PdfGrid(kids(json['children']),
-            columns: (json['columns'] as num?)?.toInt() ?? 2);
+            columns: (json['columns'] as num?)?.toInt() ?? 2,);
       case 'keepTogether':
         return PdfKeepTogether(kids(json['children']));
       case 'table':
@@ -83,8 +83,8 @@ sealed class PdfComponent {
       case 'keyValue':
         return PdfKeyValueSection((json['pairs'] as List? ?? const [])
             .map((p) => MapEntry(
-                (p as List)[0].toString(), p.length > 1 ? p[1].toString() : ''))
-            .toList());
+                (p as List)[0].toString(), p.length > 1 ? p[1].toString() : '',),)
+            .toList(),);
       case 'list':
       case 'bulletList':
       case 'numberedList':
@@ -96,25 +96,55 @@ sealed class PdfComponent {
         return PdfImage(
             label: json['label'] as String? ?? 'Image',
             assetKey: json['assetKey'] as String?,
-            altText: json['altText'] as String?);
+            altText: json['altText'] as String?,);
       case 'svg':
         return PdfSvg(json['data'] as String? ?? '', altText: json['altText'] as String?);
       case 'barcode':
         return PdfBarcode(json['value'] as String? ?? '',
-            symbology: json['symbology'] as String? ?? 'code128');
+            symbology: json['symbology'] as String? ?? 'code128',);
       case 'qrCode':
         return PdfQrCode(json['value'] as String? ?? '');
       case 'statusBadge':
         return PdfStatusBadge(
             label: json['label'] as String? ?? 'STATUS',
-            tone: json['tone'] as String? ?? 'blue');
+            tone: json['tone'] as String? ?? 'blue',);
       case 'infoBox':
         return PdfInfoBox(json['text'] as String? ?? '',
-            tone: json['tone'] as String? ?? 'blue');
+            tone: json['tone'] as String? ?? 'blue',);
       case 'signatureBlock':
         return PdfSignatureBlock(
             name: json['name'] as String? ?? '',
-            role: json['role'] as String? ?? '');
+            role: json['role'] as String? ?? '',
+            dateLabel: json['dateLabel'] as String?,);
+      case 'watermark':
+        return PdfWatermark(json['text'] as String? ?? '',
+            opacity: (json['opacity'] as num?)?.toDouble() ?? 0.12,
+            angle: (json['angle'] as num?)?.toDouble() ?? -0.6,
+            fontSize: (json['fontSize'] as num?)?.toDouble() ?? 48,);
+      case 'stamp':
+        return PdfStamp(json['text'] as String? ?? '',
+            tone: json['tone'] as String? ?? 'red',
+            date: json['date'] as String?,
+            angle: (json['angle'] as num?)?.toDouble() ?? -0.25,);
+      case 'textField':
+        return PdfTextFormField(
+            name: json['name'] as String? ?? '',
+            label: json['label'] as String? ?? '',
+            value: json['value'] as String? ?? '',
+            width: (json['width'] as num?)?.toDouble() ?? 220,
+            height: (json['height'] as num?)?.toDouble() ?? 22,
+            multiline: json['multiline'] as bool? ?? false,);
+      case 'checkboxField':
+        return PdfCheckboxField(
+            name: json['name'] as String? ?? '',
+            label: json['label'] as String? ?? '',
+            checked: json['checked'] as bool? ?? false,);
+      case 'signatureField':
+        return PdfSignatureFormField(
+            name: json['name'] as String? ?? '',
+            label: json['label'] as String? ?? 'Signature',
+            width: (json['width'] as num?)?.toDouble() ?? 200,
+            height: (json['height'] as num?)?.toDouble() ?? 60,);
       case 'header':
         return PdfHeader(title: json['title'] as String? ?? '');
       case 'footer':
@@ -122,10 +152,22 @@ sealed class PdfComponent {
       case 'pageNumber':
         return PdfPageNumber(format: json['format'] as String? ?? '{page} / {total}');
       case 'chart':
-        return PdfChartPlaceholder(label: json['label'] as String? ?? 'Chart');
+        return PdfChart(
+          chartType:
+              enumByName(PdfChartType.values, json['chartType'], PdfChartType.bar),
+          title: (json['title'] ?? json['label']) as String?,
+          labels: (json['labels'] as List? ?? const [])
+              .map((e) => e.toString())
+              .toList(),
+          series: (json['series'] as List? ?? const [])
+              .map((e) =>
+                  PdfChartSeries.fromJson((e as Map).cast<String, Object?>()),)
+              .toList(),
+          height: (json['height'] as num?)?.toDouble() ?? 170,
+        );
       case 'conditional':
         return PdfConditional(
-            when: json['when'] as bool? ?? true, child: kids(json['children']));
+            when: json['when'] as bool? ?? true, child: kids(json['children']),);
       case 'repeated':
         return PdfRepeated(kids(json['children']), count: (json['count'] as num?)?.toInt() ?? 1);
       default:
@@ -323,7 +365,7 @@ class PdfTable extends PdfComponent {
           if (r.length != columns.length)
             PdfValidationIssue(
                 'Row ${i + 1} has ${r.length} cells, expected ${columns.length}',
-                severity: 'warning'),
+                severity: 'warning',),
       ];
   @override
   Map<String, Object?> toJson() =>
@@ -398,13 +440,66 @@ class PdfQrCode extends PdfComponent {
   Map<String, Object?> toJson() => {'type': type, 'value': value};
 }
 
-class PdfChartPlaceholder extends PdfComponent {
-  const PdfChartPlaceholder({required this.label});
-  final String label;
+/// The kind of chart to render.
+enum PdfChartType { bar, line, area, pie }
+
+/// One data series (a bar group, a line, an area, or — for pie — the slice set).
+@immutable
+class PdfChartSeries {
+  const PdfChartSeries({required this.name, required this.values, this.color});
+  final String name;
+  final List<double> values;
+
+  /// 0xAARRGGBB; when null the mapper assigns a palette color by index.
+  final int? color;
+
+  Map<String, Object?> toJson() =>
+      {'name': name, 'values': values, 'color': color};
+
+  factory PdfChartSeries.fromJson(Map<String, Object?> json) => PdfChartSeries(
+        name: json['name'] as String? ?? '',
+        values: (json['values'] as List? ?? const [])
+            .map((e) => (e as num).toDouble())
+            .toList(),
+        color: (json['color'] as num?)?.toInt(),
+      );
+}
+
+/// A data-driven chart (bar / line / area / pie), rendered natively to vector
+/// PDF by the mapper — no rasterization, so it stays crisp and isolate-safe.
+class PdfChart extends PdfComponent {
+  const PdfChart({
+    required this.chartType,
+    required this.series,
+    this.labels = const <String>[],
+    this.title,
+    this.height = 170,
+  });
+  final PdfChartType chartType;
+  final List<PdfChartSeries> series;
+  final List<String> labels;
+  final String? title;
+  final double height;
   @override
   String get type => 'chart';
   @override
-  Map<String, Object?> toJson() => {'type': type, 'label': label};
+  List<PdfValidationIssue> validate() => [
+        if (series.isEmpty)
+          const PdfValidationIssue('Chart has no data series',
+              severity: 'warning',),
+        if (chartType == PdfChartType.pie && series.length > 1)
+          const PdfValidationIssue('Pie charts use the first series only',
+              severity: 'warning',),
+      ];
+  @override
+  Map<String, Object?> toJson() => {
+        'type': type,
+        'chartType': chartType.name,
+        'series': series.map((s) => s.toJson()).toList(),
+        'labels': labels,
+        'title': title,
+        'height': height,
+      };
 }
 
 // ---- document furniture ---------------------------------------------------
@@ -430,13 +525,17 @@ class PdfInfoBox extends PdfComponent {
 }
 
 class PdfSignatureBlock extends PdfComponent {
-  const PdfSignatureBlock({required this.name, required this.role});
+  const PdfSignatureBlock({required this.name, required this.role, this.dateLabel});
   final String name;
   final String role;
+
+  /// Optional caption for a date line beneath the signature (e.g. 'Date').
+  final String? dateLabel;
   @override
   String get type => 'signatureBlock';
   @override
-  Map<String, Object?> toJson() => {'type': type, 'name': name, 'role': role};
+  Map<String, Object?> toJson() =>
+      {'type': type, 'name': name, 'role': role, 'dateLabel': dateLabel};
 }
 
 class PdfHeader extends PdfComponent {
@@ -464,4 +563,124 @@ class PdfPageNumber extends PdfComponent {
   String get type => 'pageNumber';
   @override
   Map<String, Object?> toJson() => {'type': type, 'format': format};
+}
+
+// ---- overlays: watermark & stamp ------------------------------------------
+
+/// An inline, diagonal watermark drawn where it sits in the flow (distinct from
+/// the page-background watermark configured on [PdfPostProcessing]).
+class PdfWatermark extends PdfComponent {
+  const PdfWatermark(this.text,
+      {this.opacity = 0.12, this.angle = -0.6, this.fontSize = 48,});
+  final String text;
+  final double opacity; // 0..1
+  final double angle; // radians
+  final double fontSize;
+  @override
+  String get type => 'watermark';
+  @override
+  Map<String, Object?> toJson() => {
+        'type': type,
+        'text': text,
+        'opacity': opacity,
+        'angle': angle,
+        'fontSize': fontSize,
+      };
+}
+
+/// A rubber-stamp label (e.g. PAID / CONFIDENTIAL): a rotated, tone-colored
+/// bordered box with an optional date line.
+class PdfStamp extends PdfComponent {
+  const PdfStamp(this.text, {this.tone = 'red', this.date, this.angle = -0.25});
+  final String text;
+  final String tone; // green | orange | blue | red
+  final String? date;
+  final double angle; // radians
+  @override
+  String get type => 'stamp';
+  @override
+  Map<String, Object?> toJson() =>
+      {'type': type, 'text': text, 'tone': tone, 'date': date, 'angle': angle};
+}
+
+// ---- form fields (AcroForm) -----------------------------------------------
+
+/// Base for interactive form fields. Each carries a unique [name] used by the
+/// fill API and by the produced AcroForm.
+sealed class PdfFormField extends PdfComponent {
+  const PdfFormField({required this.name, required this.label});
+  final String name;
+  final String label;
+  @override
+  List<PdfValidationIssue> validate() => [
+        if (name.trim().isEmpty)
+          const PdfValidationIssue('Form field has no name'),
+      ];
+}
+
+/// A single- or multi-line text field. A non-empty [value] renders as a filled
+/// field; an empty one renders as an interactive AcroForm text input.
+class PdfTextFormField extends PdfFormField {
+  const PdfTextFormField({
+    required super.name,
+    super.label = '',
+    this.value = '',
+    this.width = 220,
+    this.height = 22,
+    this.multiline = false,
+  });
+  final String value;
+  final double width;
+  final double height;
+  final bool multiline;
+  PdfTextFormField withValue(String v) => PdfTextFormField(
+      name: name,
+      label: label,
+      value: v,
+      width: width,
+      height: height,
+      multiline: multiline,);
+  @override
+  String get type => 'textField';
+  @override
+  Map<String, Object?> toJson() => {
+        'type': type,
+        'name': name,
+        'label': label,
+        'value': value,
+        'width': width,
+        'height': height,
+        'multiline': multiline,
+      };
+}
+
+/// An interactive checkbox with a label.
+class PdfCheckboxField extends PdfFormField {
+  const PdfCheckboxField(
+      {required super.name, super.label = '', this.checked = false,});
+  final bool checked;
+  PdfCheckboxField withChecked(bool v) =>
+      PdfCheckboxField(name: name, label: label, checked: v);
+  @override
+  String get type => 'checkboxField';
+  @override
+  Map<String, Object?> toJson() =>
+      {'type': type, 'name': name, 'label': label, 'checked': checked};
+}
+
+/// A signature field: a bordered signing area with a caption.
+class PdfSignatureFormField extends PdfFormField {
+  const PdfSignatureFormField({
+    required super.name,
+    super.label = 'Signature',
+    this.width = 200,
+    this.height = 60,
+  });
+  final double width;
+  final double height;
+  @override
+  String get type => 'signatureField';
+  @override
+  Map<String, Object?> toJson() =>
+      {'type': type, 'name': name, 'label': label, 'width': width, 'height': height};
 }

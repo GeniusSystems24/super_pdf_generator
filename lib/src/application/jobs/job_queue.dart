@@ -151,7 +151,7 @@ class JobQueue {
   }
 
   void clearCompleted() => _repo.removeWhere(
-      (j) => j.status is JobCompleted || j.status is JobCancelled);
+      (j) => j.status is JobCompleted || j.status is JobCancelled,);
 
   // ---- executor ----------------------------------------------------------
 
@@ -171,7 +171,7 @@ class JobQueue {
         .where((j) =>
             j.status is JobPending &&
             !_cancelled.contains(j.id) &&
-            _scheduler.isDue(j, now))
+            _scheduler.isDue(j, now),)
         .toList();
     if (pending.isEmpty) return null;
     return _policy.order(pending).first;

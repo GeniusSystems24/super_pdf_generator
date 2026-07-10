@@ -67,6 +67,8 @@ enum PdfFailureCategory {
   printing,
   sharing,
   processing,
+  security,
+  export,
   unsupportedFeature,
   permission,
   cancelled,
@@ -212,6 +214,32 @@ class ProcessingFailure extends PdfFailure {
   });
   @override
   PdfFailureCategory get category => PdfFailureCategory.processing;
+}
+
+class SecurityFailure extends PdfFailure {
+  const SecurityFailure({
+    required super.code,
+    required super.message,
+    super.cause,
+    super.retryable = false,
+    super.recovery,
+    super.context,
+  });
+  @override
+  PdfFailureCategory get category => PdfFailureCategory.security;
+}
+
+class ExportFailure extends PdfFailure {
+  const ExportFailure({
+    required super.code,
+    required super.message,
+    super.cause,
+    super.retryable = true,
+    super.recovery,
+    super.context,
+  });
+  @override
+  PdfFailureCategory get category => PdfFailureCategory.export;
 }
 
 class UnsupportedFeatureFailure extends PdfFailure {

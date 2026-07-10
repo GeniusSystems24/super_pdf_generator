@@ -217,7 +217,7 @@ class PdfTheme {
   factory PdfTheme.fromJson(Map<String, Object?> json) => PdfTheme(
         palette: json['palette'] is Map
             ? PdfPalette.fromJson(
-                (json['palette']! as Map).cast<String, Object?>())
+                (json['palette']! as Map).cast<String, Object?>(),)
             : const PdfPalette(),
         baseFontFamily: json['baseFontFamily'] as String?,
         arabicFontFamily: json['arabicFontFamily'] as String?,

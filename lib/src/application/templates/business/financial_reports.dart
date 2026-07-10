@@ -4,7 +4,7 @@
 // Actual — each recomputes its aggregates with GeniusMoney and enforces the
 // relevant accounting identity with GeniusFinancialValidator.
 
-import 'package:super_pdf_generator/pdf_generator.dart';
+import 'package:super_pdf_generator/src/domain/components.dart';
 
 import '../../../domain/document.dart';
 import '../../../domain/financial/genius_financial_validator.dart';

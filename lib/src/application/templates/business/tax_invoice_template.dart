@@ -4,7 +4,6 @@
 // validates the caller-provided figures with GeniusFinancialValidator, so a
 // document only renders when its arithmetic is provably correct.
 
-import '../../../domain/components.dart';
 import '../../../domain/document.dart';
 import '../../../domain/financial/genius_financial_validator.dart';
 import '../../../domain/financial/genius_money.dart';
@@ -80,14 +79,14 @@ class TaxInvoiceTemplate extends PdfTemplate<TaxInvoiceData> {
       results.add(validator.validateSubtotal(
         lineTotals: nets,
         providedSubtotal: data.providedSubtotal!,
-      ));
+      ),);
     }
     if (data.providedVatTotal != null) {
       results.add(validator.validateGridColumn(
         rowValues: vats,
         providedTotal: data.providedVatTotal!,
         columnId: 'vat_total',
-      ));
+      ),);
     }
     if (data.providedGrandTotal != null) {
       results.add(validator.validateGrandTotal(
@@ -96,7 +95,7 @@ class TaxInvoiceTemplate extends PdfTemplate<TaxInvoiceData> {
         vatAmount: vatTotal,
         fees: 0,
         providedGrandTotal: data.providedGrandTotal!,
-      ));
+      ),);
     }
     return validator.combineResults(results);
   }
@@ -180,7 +179,7 @@ class TaxInvoiceTemplate extends PdfTemplate<TaxInvoiceData> {
       pdf.row([
         pdf.column([
           pdf.qrCode(data.qrPayload ??
-              'INV:${data.invoiceNumber}|TOT:${grand.toStringAsFixed(cur.decimalPlaces)}|VAT:${vatTotal.toStringAsFixed(cur.decimalPlaces)}'),
+              'INV:${data.invoiceNumber}|TOT:${grand.toStringAsFixed(cur.decimalPlaces)}|VAT:${vatTotal.toStringAsFixed(cur.decimalPlaces)}',),
         ]),
         pdf.column([
           pdf.keyValue([

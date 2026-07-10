@@ -54,7 +54,9 @@ String amountInWords(
 
 int _pow10(int n) {
   var r = 1;
-  for (var i = 0; i < n; i++) r *= 10;
+  for (var i = 0; i < n; i++) {
+    r *= 10;
+  }
   return r;
 }
 

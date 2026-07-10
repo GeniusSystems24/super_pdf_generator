@@ -25,7 +25,7 @@ class IsolateRenderRunner implements PdfRenderer {
 
   @override
   Future<PdfRenderResult> render(PdfRenderRequest request,
-      [PdfRenderContext? context]) async {
+      [PdfRenderContext? context,]) async {
     // Custom fonts are held by the main-isolate delegate and are not sent
     // across the boundary, so fall back to the delegate when they are set.
     final hasCustomFonts = _delegate.baseFontBytes != null ||
@@ -34,12 +34,12 @@ class IsolateRenderRunner implements PdfRenderer {
 
     if (preferIsolate && !hasCustomFonts) {
       context?.onProgress?.call(
-          const PdfGenerationProgress(fraction: 0.1, note: 'dispatching to isolate'));
+          const PdfGenerationProgress(fraction: 0.1, note: 'dispatching to isolate'),);
       try {
         final documentJson = request.document.toJson();
         final processingJson = request.processing.toJson();
         final (bytes, pages) = await Isolate.run(
-            () => renderDocumentJson(documentJson, processingJson));
+            () => renderDocumentJson(documentJson, processingJson),);
         context?.onProgress?.call(const PdfGenerationProgress(fraction: 1, note: 'done'));
         return PdfRenderResult(bytes: bytes, pageCount: pages);
       } catch (_) {

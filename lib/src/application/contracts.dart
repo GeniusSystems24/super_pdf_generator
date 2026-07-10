@@ -6,9 +6,13 @@ import 'dart:typed_data';
 
 import '../domain/document.dart';
 import '../domain/document_info.dart';
+import '../domain/export.dart';
 import '../domain/generation.dart';
+import '../domain/intelligence.dart';
 import '../domain/printing.dart';
 import '../domain/processing.dart';
+import '../domain/security.dart';
+import '../domain/sharing.dart';
 
 /// Optional context passed to a renderer (fonts already resolved, etc.).
 class PdfRenderContext {
@@ -30,9 +34,9 @@ class PdfRenderRequest {
   factory PdfRenderRequest.fromJson(Map<String, Object?> json) =>
       PdfRenderRequest(
         document: PdfDocumentDefinition.fromJson(
-            (json['document'] as Map).cast<String, Object?>()),
+            (json['document'] as Map).cast<String, Object?>(),),
         processing: PdfPostProcessing.fromJson(
-            (json['processing'] as Map).cast<String, Object?>()),
+            (json['processing'] as Map).cast<String, Object?>(),),
       );
 }
 
@@ -97,6 +101,19 @@ abstract interface class EmailGateway {
 abstract interface class ShareGateway {
   bool get canShare;
   Future<void> share(PdfGenerationResult result, {String? subject});
+
+  /// Targets this gateway can route to. The platform sheet typically surfaces
+  /// email, Bluetooth, messaging apps and cloud drives, so an adapter backed by
+  /// it reports several — even though selecting one opens the same sheet.
+  Set<PdfShareTarget> get availableTargets;
+
+  /// Share to a specific [target]. Adapters fall back to the system sheet when
+  /// the OS does not expose a direct channel for [target].
+  Future<void> shareTo(
+    PdfGenerationResult result, {
+    required PdfShareTarget target,
+    String? subject,
+  });
 }
 
 /// A structured log event.
@@ -117,4 +134,36 @@ abstract interface class PdfLogger {
 abstract interface class FontRegistry {
   Future<Uint8List?> resolve(String family, {bool bold, bool italic});
   void register(String family, Uint8List bytes, {bool bold, bool italic});
+}
+
+/// Encrypt / decrypt a PDF and apply permission restrictions. Implemented in
+/// infrastructure by the Syncfusion adapter (the only layer that touches the
+/// PDF engine). Optional on [PdfClient]; absent clients report the feature as
+/// unsupported rather than throwing.
+abstract interface class PdfSecurityService {
+  /// Protect [request.input] with the given options, returning encrypted bytes.
+  Future<PdfSecurityResult> protect(PdfSecurityRequest request);
+
+  /// Remove protection from an encrypted document, given its password.
+  Future<PdfSecurityResult> unlock(PdfUnlockRequest request);
+}
+
+/// Convert an existing PDF into another representation — HTML, raster images,
+/// plain text, or a PDF/A archival profile. Implemented in infrastructure.
+abstract interface class PdfExporter {
+  Future<PdfExportResult> export(PdfExportRequest request);
+}
+
+/// Analyze a document's structure and content and offer layout suggestions.
+///
+/// The built-in implementation is a dependency-free heuristic that runs
+/// entirely offline; a host may inject a smarter (e.g. model-backed) adapter.
+abstract interface class PdfIntelligence {
+  /// Structural + content metrics for [document].
+  Future<PdfContentAnalysis> analyze(PdfDocumentDefinition document);
+
+  /// Actionable, bilingual layout/content suggestions for [document].
+  Future<List<PdfLayoutSuggestion>> suggestLayout(
+    PdfDocumentDefinition document,
+  );
 }

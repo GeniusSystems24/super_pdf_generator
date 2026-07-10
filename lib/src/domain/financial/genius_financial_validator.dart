@@ -255,7 +255,7 @@ class GeniusFinancialValidator {
         messageAr:
             'انحراف الميزانية (${actualVariance.toDisplayString()}) لا يتطابق مع '
             'الفعلي − الميزانية = ${expectedVariance.toDisplayString()}',
-      ));
+      ),);
     }
 
     if (providedVariancePct != null && budget.abs() > 0) {
@@ -274,7 +274,7 @@ class GeniusFinancialValidator {
           messageAr:
               'نسبة الانحراف (${actualPct.toDisplayString()}) لا تتطابق مع '
               'المحسوبة ${expectedPct.toDisplayString()}%',
-        ));
+        ),);
       }
     }
 
