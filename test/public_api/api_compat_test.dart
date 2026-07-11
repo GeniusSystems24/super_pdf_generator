@@ -71,7 +71,7 @@ void main() {
     test('processing + job requests are constructible', () {
       const merge = PdfMergeRequest(inputs: []);
       expect(merge.operation, 'merge');
-      const batch = PdfBatchRequest(requests: [], label: 'nightly');
+      final batch = const PdfBatchRequest(requests: [], label: 'nightly');
       expect(batch.concurrency, 4);
       expect(PdfJobPriority.values, contains(PdfJobPriority.high));
     });

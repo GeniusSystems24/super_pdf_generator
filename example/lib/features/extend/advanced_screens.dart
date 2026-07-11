@@ -182,7 +182,7 @@ class _SecurityScreenState extends State<SecurityScreen> {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
         decoration: BoxDecoration(
-          color: on ? gl.accent.withValues(alpha:0.12) : Colors.transparent,
+          color: on ? gl.accent.withOpacity(0.12) : Colors.transparent,
           borderRadius: GlRadius.pill,
           border: Border.all(color: on ? gl.accent : gl.border),
         ),
@@ -478,9 +478,9 @@ Widget _resultBox(BuildContext context, String text, bool ok) {
     width: double.infinity,
     padding: const EdgeInsets.all(12),
     decoration: BoxDecoration(
-      color: col.withValues(alpha: 0.08),
+      color: col.withOpacity(0.08),
       borderRadius: const BorderRadius.all(GlRadius.md),
-      border: Border.all(color: col.withValues(alpha:0.3)),
+      border: Border.all(color: col.withOpacity(0.3)),
     ),
     child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
       Icon(ok ? Icons.check_circle_outline_rounded : Icons.error_outline_rounded, size: 15, color: col),

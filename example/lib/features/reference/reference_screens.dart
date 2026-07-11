@@ -118,7 +118,7 @@ class RtlScreen extends StatelessWidget {
                   const Spacer(),
                   Container(
                     padding: const EdgeInsets.all(11),
-                    decoration: BoxDecoration(color: gl.orange.withValues(alpha:0.08), borderRadius: const BorderRadius.all(GlRadius.md), border: Border.all(color: gl.orange.withValues(alpha:0.24))),
+                    decoration: BoxDecoration(color: gl.orange.withOpacity(0.08), borderRadius: const BorderRadius.all(GlRadius.md), border: Border.all(color: gl.orange.withOpacity(0.24))),
                     child: Text('Numbers, dates & currency reformat per locale via Intl-backed formatters. The whole document mirrors when direction is RTL.',
                         style: GlType.body(context, size: 10.5, color: gl.fg2).copyWith(height: 1.5)),
                   ),
@@ -221,7 +221,7 @@ class ErrorHandlingScreen extends StatelessWidget {
                   margin: const EdgeInsets.only(bottom: 2),
                   padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
                   decoration: BoxDecoration(
-                    color: i == 1 ? gl.danger.withValues(alpha:0.09) : Colors.transparent,
+                    color: i == 1 ? gl.danger.withOpacity(0.09) : Colors.transparent,
                     borderRadius: const BorderRadius.all(GlRadius.md),
                     border: Border(left: BorderSide(color: i == 1 ? gl.danger : Colors.transparent, width: 2)),
                   ),
@@ -784,7 +784,7 @@ class _TemplatesScreenState extends State<TemplatesScreen> {
       children: [
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 13),
-          decoration: BoxDecoration(color: gl.orange.withValues(alpha:0.08), borderRadius: const BorderRadius.all(GlRadius.lg), border: Border.all(color: gl.orange.withValues(alpha:0.26))),
+          decoration: BoxDecoration(color: gl.orange.withOpacity(0.08), borderRadius: const BorderRadius.all(GlRadius.lg), border: Border.all(color: gl.orange.withOpacity(0.26))),
           child: Row(children: [
             GlSectionMarker(gl.orange, height: 32),
             const SizedBox(width: 12),
@@ -869,7 +869,7 @@ class _TemplateCard extends StatelessWidget {
             child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                decoration: BoxDecoration(color: gl.accent.withValues(alpha:0.1), borderRadius: GlRadius.pill),
+                decoration: BoxDecoration(color: gl.accent.withOpacity(0.1), borderRadius: GlRadius.pill),
                 child: Text(category.toUpperCase(), style: TextStyle(fontSize: 8.5, color: gl.accent, letterSpacing: 0.5, fontWeight: FontWeight.w700)),
               ),
               const SizedBox(height: 8),
@@ -975,7 +975,7 @@ class ApiReferenceScreen extends StatelessWidget {
           margin: const EdgeInsets.only(bottom: 1),
           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
           decoration: BoxDecoration(
-            color: i == active ? gl.accent.withValues(alpha:0.1) : Colors.transparent,
+            color: i == active ? gl.accent.withOpacity(0.1) : Colors.transparent,
             borderRadius: const BorderRadius.all(GlRadius.sm),
             border: Border(left: BorderSide(color: i == active ? gl.accent : Colors.transparent, width: 2)),
           ),

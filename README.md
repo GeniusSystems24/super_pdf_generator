@@ -311,6 +311,74 @@ flutter test
 
 ---
 
+## Reports — pixel-faithful GeniusLink documents
+
+Alongside the generic document-tree renderer, the SDK ships a self-contained
+**reports module** (`lib/src/reports/`, re-exported from the main barrel) that
+reproduces the reference financial documents — **Tax Invoice**, **Trial
+Balance**, **Customer Statement** and **Inventory Valuation Report** — with full
+**LTR / RTL (English / Arabic) parity**. It renders directly on the `pdf` widget
+layer for exact control over the reference layouts, and bundles its own fonts
+(Noto Sans + Noto Naskh Arabic) so Arabic shaping works with no setup.
+
+```dart
+import 'package:super_pdf_generator/super_pdf_generator.dart';
+
+final reports = await GeniusReports.load();           // decodes bundled fonts
+
+// Generate any document, in either direction, from your data (or the samples):
+final bytes = await reports.taxInvoice(
+  ReportSamples.taxInvoice(),
+  dir: ReportDir.rtl,
+);
+
+await Printing.layoutPdf(onLayout: (_) => bytes);      // print / share / save
+```
+
+### What's in the box
+
+- **Theme** — `ReportPalette` (the exact reference fills: `#e0e0e0` table
+  headers, `#f5f5f5` zebra rows, `#e3f2fd` group bands, `#424242` grand-total
+  band, plus green / red / gray summary tints), `ReportTypeScale`,
+  `ReportFonts`, and `ReportTheme` which composes them with a reading direction
+  and hands out ready-made text styles + mirroring helpers.
+- **Reusable components** — `CompanyHeader` (bilingual, logo slot),
+  `DocumentTitle`, `InfoSection` (two mirrored key/value panels),
+  `ReportDataTable` (grouped, zebra-striped, subtotals + dark grand-total band,
+  paginates row-by-row via `.widgets()`), `TotalsPanel`, `SummaryBox`
+  (invoice / card / bordered / minimal presets with semantic subtotal tints),
+  `SignatureRow`, `NotesBlock`, `QrPanel`, `PageFooter` (running user · date ·
+  page band).
+- **Document builders** — `TaxInvoiceReport`, `TrialBalanceReport`,
+  `CustomerStatementReport`, `InventoryValuationReport`, each taking a typed
+  data object and a `ReportDir`.
+- **Facade + samples** — `GeniusReports` (one entry point) and `ReportSamples`
+  (data mirroring the reference PDFs, for a one-call identical document).
+
+### RTL behaviour
+
+Set `dir: ReportDir.rtl` and the module mirrors column order, flips label/value
+placement, moves the currency code to the leading side (`SAR 30,100.00` vs
+`30,100.00 SAR`), and renders the Arabic label of every field/title/column.
+Bilingual company details keep English-left / Arabic-right in both directions,
+matching the reference.
+
+### Composing a custom document
+
+The builders are thin; you can assemble your own from the same components and
+hand the flat widget list to `ReportDocument.render(theme: …, body: […])`. Use
+`reports.themeFor(dir)` to get the composed `ReportTheme`.
+
+### The example screen
+
+`example/lib/features/reports/reports_screen.dart` ("Report Library", the
+studio's landing destination) demonstrates the whole module: a GeniusLink-styled
+document picker, an **LTR / RTL** toggle, a live `PdfPreview` (print & share from
+its toolbar) and a per-document usage snippet. Run it with `flutter run` from
+`example/`.
+
+---
+
 ## Design tokens
 
 Two independent token systems (as in the Web proposal):

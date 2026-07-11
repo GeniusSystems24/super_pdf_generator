@@ -64,6 +64,7 @@ class AccountStatementTemplate extends PdfTemplate<AccountStatementData> {
   @override
   String get description => 'Running-balance statement with validated closing balance.';
 
+
   @override
   GeniusFinancialValidationResult validate(AccountStatementData data, {PdfTemplateContext? context}) {
     final ctx = context ?? PdfTemplateContext();

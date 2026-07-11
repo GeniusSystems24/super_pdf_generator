@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:super_pdf_generator/super_pdf_generator.dart';
 
 import '../features/dashboard/dashboard_screen.dart';
+import '../features/reports/reports_screen.dart';
 import '../features/builder/builder_screen.dart';
 import '../features/preview/preview_screen.dart';
 import '../features/processing/processing_screen.dart';
@@ -52,6 +53,8 @@ class _StudioShellState extends State<StudioShell> {
   int _index = 0;
 
   late final List<StudioDest> _dests = <StudioDest>[
+    StudioDest('REPORTS', 'Report Library', Icons.auto_stories_outlined, const Color(0xFF4A7CFF),
+        (c) => const ReportsScreen()),
     StudioDest('OVERVIEW', 'Dashboard', Icons.grid_view_rounded, const Color(0xFF8D90A0),
         (c) => DashboardScreen(client: widget.client, builder: widget.builder, onNavigate: _goByLabel)),
     StudioDest('BUILD', 'Document Builder', Icons.description_outlined, const Color(0xFF4A7CFF),

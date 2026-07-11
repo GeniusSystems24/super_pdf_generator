@@ -110,7 +110,7 @@ class _ProcessingScreenState extends State<ProcessingScreen> {
               const SizedBox(height: 14),
               Container(
                 padding: const EdgeInsets.all(11),
-                decoration: BoxDecoration(color: gl.green.withValues(alpha:0.08), borderRadius: const BorderRadius.all(GlRadius.md), border: Border.all(color: gl.green.withValues(alpha:0.24))),
+                decoration: BoxDecoration(color: gl.green.withOpacity(0.08), borderRadius: const BorderRadius.all(GlRadius.md), border: Border.all(color: gl.green.withOpacity(0.24))),
                 child: Text('Each op is a serializable ProcessingRequest resolved by client.process().', style: GlType.body(context, size: 10.5, color: gl.fg2)),
               ),
             ],
@@ -273,7 +273,7 @@ class _ErrorState extends StatelessWidget {
       child: Container(
         width: 380,
         padding: const EdgeInsets.all(20),
-        decoration: BoxDecoration(color: gl.danger.withValues(alpha:0.07), borderRadius: const BorderRadius.all(GlRadius.lg), border: Border.all(color: gl.danger.withValues(alpha:0.26))),
+        decoration: BoxDecoration(color: gl.danger.withOpacity(0.07), borderRadius: const BorderRadius.all(GlRadius.lg), border: Border.all(color: gl.danger.withOpacity(0.26))),
         child: Column(mainAxisSize: MainAxisSize.min, children: [
           Icon(Icons.error_outline_rounded, color: gl.danger, size: 28),
           const SizedBox(height: 10),

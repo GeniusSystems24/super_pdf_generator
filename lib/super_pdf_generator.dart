@@ -13,7 +13,7 @@
 ///
 /// The Domain and Application layers are pure Dart — they never import Flutter,
 /// `dart:ui`, `dart:io`, the `pdf` package or the `printing` package.
-library super_pdf_generator;
+library;
 
 // ---- Domain: models & value objects --------------------------------------
 export 'src/domain/value_objects.dart';
@@ -68,3 +68,10 @@ export 'src/presentation/builder_controller.dart';
 
 // ---- Composition root ------------------------------------------------------
 export 'src/composition/composition_root.dart';
+
+// ---- Reports: pixel-faithful GeniusLink report documents ------------------
+// A self-contained module (fonts + theme + reusable components + document
+// builders) that reproduces the reference financial reports — tax invoice,
+// trial balance, customer statement and inventory valuation — with full
+// LTR/RTL parity. Entry point: `GeniusReports.load()`.
+export 'src/reports/reports.dart'hide TrialBalanceData, CustomerStatementData, InventoryItem, InventoryReportData;

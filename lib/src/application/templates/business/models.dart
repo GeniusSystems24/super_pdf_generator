@@ -31,8 +31,8 @@ class PdfInvoiceLine {
     required this.unitPrice,
     this.discount = 0,
     this.vatRate = 15,
-    this.descriptionAr,
-  });
+    String? descriptionAr,
+  }) : descriptionAr = descriptionAr;
 
   final String description;
   final String? descriptionAr;

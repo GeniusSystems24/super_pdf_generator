@@ -4,6 +4,6 @@
 /// re-exports it so `import 'package:super_pdf_generator/pdf_generator.dart';`
 /// and `import 'package:super_pdf_generator/super_pdf_generator.dart';` are
 /// equivalent.
-library pdf_generator;
+library;
 
 export 'super_pdf_generator.dart';

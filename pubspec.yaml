@@ -40,4 +40,12 @@ dev_dependencies:
     sdk: flutter
   flutter_lints: ^5.0.0
 
-flutter: {}
+flutter:
+  # Bundled faithful-report fonts. Shipped with the package so Arabic shaping
+  # works out of the box (loaded at runtime by ReportFonts.load()). Latin =
+  # Noto Sans, Arabic = Noto Naskh Arabic (both regular + bold).
+  assets:
+    - assets/fonts/NotoSans-Regular.ttf
+    - assets/fonts/NotoSans-Bold.ttf
+    - assets/fonts/NotoNaskhArabic-Regular.ttf
+    - assets/fonts/NotoNaskhArabic-Bold.ttf
